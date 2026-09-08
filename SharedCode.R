@@ -39,6 +39,9 @@ load_data_NFLBDB2022 <- function(directory,
   }  
   load_packages(c("data.table", "dplyr"))
   
+  # check directory for /
+  directory <- sub("/$", "", directory)
+  
   # Define allowable years
   valid_years <- 2018:2020
   
@@ -64,20 +67,27 @@ load_data_NFLBDB2022 <- function(directory,
     plays       <- fread(paste0(directory, "/plays.csv"))         
     players     <- fread(paste0(directory, "/players.csv"))       
     games       <- fread(paste0(directory, "/games.csv"))         
-    player_play <- fread(paste0(directory, "/player_play.csv"))   
     
     new_df <- left_join(new_df, games,       by = c("gameId"))
     new_df <- left_join(new_df, plays,       by = c("gameId", "playId"))
     new_df <- left_join(new_df, players,     by = c("nflId", "displayName"))
+    
+    # based on the direction of the play, change the yard line numner
+    new_df <- new_df %>%
+      mutate(yardlineNumber = ifelse(playDirection == "right", 
+                                      100 - yardlineNumber, 
+                                      yardlineNumber)
+            ) %>%
+      data.frame()    
   }
   
   # based on the direction of the play, map the x and y coordinates to be consistently in one direction
   new_df <- new_df %>%
     mutate( x = ifelse(playDirection == "right", 120-x, x),
-            y = ifelse(playDirection == "right", 160/3-y, y),
-            yardlineNumber = ifelse(playDirection == "right", 100 - yardlineNumber, yardlineNumber)
-    ) %>%
+            y = ifelse(playDirection == "right", 160/3-y, y)
+            ) %>%
     data.frame()
+  
   
   if(length(columns) > 0) {
     for(col in columns) {
