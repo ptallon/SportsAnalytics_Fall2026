@@ -48,7 +48,7 @@ load_data_NFLBDB2022 <- function(directory,
   }
 
   # create an empty data frame
-  df <- data.frame()
+  new_df <- data.frame()
   
   # load in the data for years
   for (year in years) {
@@ -56,7 +56,7 @@ load_data_NFLBDB2022 <- function(directory,
     filename <- paste0(directory, "/tracking", year, ".csv")
     y <- fread(filename)
     
-    new_df <- rbind(df, y)
+    new_df <- rbind(new_df, y)
     rm(y)
   }
   
@@ -75,7 +75,7 @@ load_data_NFLBDB2022 <- function(directory,
   new_df <- new_df %>%
     mutate( x = ifelse(playDirection == "right", 120-x, x),
             y = ifelse(playDirection == "right", 160/3-y, y),
-            absoluteYardlineNumber = ifelse(playDirection == "right", 100 - absoluteYardlineNumber, absoluteYardlineNumber)
+            yardlineNumber = ifelse(playDirection == "right", 100 - yardlineNumber, yardlineNumber)
     ) %>%
     data.frame()
   
