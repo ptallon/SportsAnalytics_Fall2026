@@ -90,7 +90,7 @@ load_data_NFLBDB2022 <- function(directory,
     new_df <- new_df %>%
       mutate(ifelse(playDirection == "right", "left", "right")) %>%
       data.frame()
-  
+  }
   if(length(columns) > 0) {
     for(col in columns) {
       if(!col %in% colnames(df)) {
