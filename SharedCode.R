@@ -72,22 +72,24 @@ load_data_NFLBDB2022 <- function(directory,
     new_df <- left_join(new_df, plays,       by = c("gameId", "playId"))
     new_df <- left_join(new_df, players,     by = c("nflId", "displayName"))
     
-    # based on the direction of the play, change the yard line numner
+    # based on the direction of the play, change the yard line number
     new_df <- new_df %>%
       mutate(yardlineNumber = ifelse(playDirection == "right", 
                                       100 - yardlineNumber, 
                                       yardlineNumber)
             ) %>%
       data.frame()    
-  }
   
-  # based on the direction of the play, map the x and y coordinates to be consistently in one direction
-  new_df <- new_df %>%
-    mutate( x = ifelse(playDirection == "right", 120-x, x),
-            y = ifelse(playDirection == "right", 160/3-y, y)
-            ) %>%
-    data.frame()
+    # based on the direction of the play, map the x and y coordinates to be consistently in one direction
+    new_df <- new_df %>%
+      mutate( x = ifelse(playDirection == "right", 120-x, x),
+              y = ifelse(playDirection == "right", 160/3-y, y)
+              ) %>%
+      data.frame()
   
+    new_df <- new_df %>%
+      mutate(ifelse(playDirection == "right", "left", "right")) %>%
+      data.frame()
   
   if(length(columns) > 0) {
     for(col in columns) {
