@@ -100,7 +100,7 @@ visualize_single_play <- function(game_df,
   
   source('https://raw.githubusercontent.com/mlfurman3/gg_field/main/gg_field.R')
   
-  g <- ggplot(data = game_df, aes(x = x, y = y), color=team, fill=team) +
+  g <- ggplot(data = game_df, aes(x = x, y = y, color=team, fill=team)) +
     # customize colors, shapes, and sizes of players and the football
     scale_size_manual(values = c(6, 4, 6), guide = "none") +
     scale_shape_manual(values = c(21, 16, 21), guide = "none") +
