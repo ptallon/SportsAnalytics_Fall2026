@@ -145,8 +145,6 @@ visualize_single_play <- function(game_df,
   g <- g +     
     geom_point(aes(shape = team, colour = team, size = team, fill = team))
   
-  print("hi19") 
-  
   if(highlight_players_in_motion) {
     g <- g +
       geom_point(
