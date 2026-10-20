@@ -133,8 +133,8 @@ visualize_single_play <- function(game_df,
           filter(inMotionAtBallSnap == TRUE),
         aes(x = x, y = y),
         shape = 21,
-        colour = "white",
-        fill = "black",
+        colour = ifelse(highlight_players_in_motion, "black", "NA"),
+        fill = ifelse(highlight_players_in_motion == T, "black", "NA"),
         size = 6,
         inherit.aes = FALSE
       )
