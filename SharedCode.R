@@ -118,9 +118,11 @@ visualize_single_play <- function(game_df,
   
   if(showBoundingBox) {
     g <- g +
-      geom_rect(data = game_df %>% filter(team != "football"),
+      geom_rect(data = game_df |> filter(team != "football") |>
+                  distinct(frameId, team, xmin, xmax, ymin, ymax),
                 aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
-                    fill = team, color = team), alpha=0.1)
+                    fill = team, color = team),
+                alpha = 0.2, linewidth = 0.8)
   }
 
   if(highlight_players_in_motion) {
