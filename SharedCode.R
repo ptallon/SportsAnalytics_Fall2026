@@ -127,14 +127,17 @@ visualize_single_play <- function(game_df,
     geom_point(aes(shape = team, colour = team, size = team, fill = team))
   
   if(highlight_players_in_motion) {
-    g <- g + 
-      geom_point(data = game_df %>% filter(inMotionAtBallSnap %in% TRUE), 
-                 aes(x = x, y = y, 
-                 shape = 21, 
-                 colour = "black", 
-                 size = 6, 
-                 fill = "black",
-                 inherit.aes = FALSE)  )  
+    g <- g +
+      geom_point(
+        data = game_df |>
+          filter(inMotionAtBallSnap == TRUE),
+        aes(x = x, y = y),
+        shape = 21,
+        colour = "white",
+        fill = "black",
+        size = 6,
+        inherit.aes = FALSE
+      )
   }
   
   # show the target X and Y if both are not NA and the user wants to view this
