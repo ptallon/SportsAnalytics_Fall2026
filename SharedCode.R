@@ -145,7 +145,7 @@ visualize_single_play <- function(game_df,
   g <- g +     
     geom_point(aes(shape = team, colour = team, size = team, fill = team))
   
-  print("hi17") 
+  print("hi19") 
   
   if(highlight_players_in_motion) {
     g <- g +
@@ -192,7 +192,7 @@ visualize_single_play <- function(game_df,
         ),
       aes(x = x, y = y, label = jerseyNumber),
       colour = "black",
-      size = 3.5,
+      size = 3.2,
       vjust = 0.36
     ) +
     
@@ -206,7 +206,7 @@ visualize_single_play <- function(game_df,
         ),
       aes(x = x, y = y, label = jerseyNumber),
       colour = "white",
-      size = 3.5,
+      size = 3.2,
       vjust = 0.36
     ) +
     
