@@ -99,7 +99,7 @@ visualize_single_play <- function(game_df,
   load_packages(c("hms", "stringr", "gganimate", "gifski"))
   
   source('https://raw.githubusercontent.com/mlfurman3/gg_field/main/gg_field.R')
-  print("hi")
+  
   yardLine <- unique(game_df$absoluteYardlineNumber) + 20
   
   g <- ggplot(data = game_df, aes(x = x, y = y, color=team, fill=team)) +
@@ -137,11 +137,11 @@ visualize_single_play <- function(game_df,
         data = game_df |>
           filter(inMotionAtBallSnap %in% TRUE, 
                  team != "football"),
-        aes(x = x, y = y),
+        aes(x = x, y = y,
         shape = 21,
         colour = ifelse(highlight_players_in_motion == TRUE, "black", "NA"),
         fill = ifelse(highlight_players_in_motion == TRUE, "black", "NA"),
-        size = 6
+        size = 6)
         #inherit.aes = FALSE
       )
   }
