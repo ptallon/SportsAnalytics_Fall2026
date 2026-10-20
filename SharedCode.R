@@ -112,21 +112,13 @@ visualize_single_play <- function(game_df,
                                    "away" = "black",
                                    "football" = "#663300"),guide = "none") +
     
-    
-    
     scale_size_manual(values = c("home" = 6, 
                                  "football" = 4,
                                  "away" = 6), guide = "none") +
     scale_shape_manual(values = c("home" = 21, 
                                   "football" = 16, 
                                   "away" = 21), guide = "none") +
-    #scale_fill_manual(values = c("firebrick1", "black", "dodgerblue1", "white"), 
-    #                  na.value = NA,
-    #                  guide="none") + 
-    #scale_colour_manual(values = c("black", "#663300", "black","black"), 
-    #                    na.value = NA,
-    #                    guide="none") + 
-    
+
     gg_field(yardmin = max(-5,min(game_df$x)-5), yardmax = min(max(game_df$x)+5, 125) ) +
     
     # show the absolute line
