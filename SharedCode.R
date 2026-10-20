@@ -106,11 +106,11 @@ visualize_single_play <- function(game_df,
     # customize colors, shapes, and sizes of players and the football
     scale_fill_manual(values = c("home" = "dodgerblue1",
                                  "away" = "firebrick1",
-                                 "football" = "brown")), guide = "none") +
+                                 "football" = "#663300"), guide = "none") +
     
     scale_colour_manual(values = c("home" = "black",
                                    "away" = "black",
-                                   "football" = "663300"),guide = "none") +
+                                   "football" = "#663300"),guide = "none") +
     
     
     
@@ -140,7 +140,7 @@ visualize_single_play <- function(game_df,
   # add points to plot for all players and the football
   g <- g +     
     geom_point(aes(shape = team, colour = team, size = team, fill = team))
-  print("hi10")
+  print("hi11")
   
   if(highlight_players_in_motion) {
     g <- g +
