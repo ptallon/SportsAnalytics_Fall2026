@@ -100,6 +100,8 @@ visualize_single_play <- function(game_df,
   
   source('https://raw.githubusercontent.com/mlfurman3/gg_field/main/gg_field.R')
   
+  yardLine <- unique(game_df$absoluteYardlineNumber) + 20
+  
   g <- ggplot(data = game_df, aes(x = x, y = y, color=team, fill=team)) +
     # customize colors, shapes, and sizes of players and the football
     scale_size_manual(values = c(6, 4, 6), guide = "none") +
@@ -154,8 +156,6 @@ visualize_single_play <- function(game_df,
                  label = "X", colour = "black", hjust = 0.5, vjust = 0.4)
     }
   }
-  
-  yardLine <- unique(game_df$absoluteYardlineNumber) + 20
   
   g <- g +
     # insert jersey number for each player
