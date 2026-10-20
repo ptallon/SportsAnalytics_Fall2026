@@ -111,10 +111,10 @@ visualize_single_play <- function(game_df,
                         na.value = NA,
                         guide="none") + 
     
-    gg_field(yardmin = max(-5,min(game_df$x)-5), yardmax = min(max(game_df$x)+5, 125) )
+    gg_field(yardmin = max(-5,min(game_df$x)-5), yardmax = min(max(game_df$x)+5, 125) ) +
     
-  # show the absolute line
-  annotate("segment", x = yardLine, xend = yardLine, y = 0, yend = 53.33, colour = "yellow", linewidth = 1) +
+    # show the absolute line
+    annotate("segment", x = yardLine, xend = yardLine, y = 0, yend = 53.33, colour = "yellow", linewidth = 1) 
   
   if(showBoundingBox) {
     g <- g +
