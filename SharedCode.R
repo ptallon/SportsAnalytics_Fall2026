@@ -137,15 +137,15 @@ visualize_single_play <- function(game_df,
       geom_rect(data = game_df |> filter(team != "football") |>
                   distinct(frameId, team, xmin, xmax, ymin, ymax),
                 aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
-                    fill = "white", color = "black"),
-                alpha = 0.3, linewidth = 1, inherit.aes = FALSE)
+                    fill = team, color = team),
+                alpha = 0.2, linewidth = 1, inherit.aes = FALSE)
   }
   
   # add points to plot for all players and the football
   g <- g +     
     geom_point(aes(shape = team, colour = team, size = team, fill = team))
   
-  print("hi13")
+  print("hi14")
   
   if(highlight_players_in_motion) {
     g <- g +
@@ -158,9 +158,8 @@ visualize_single_play <- function(game_df,
         aes(x = x, y = y),
         colour = "white",
         fill = "black",
-        #size = 6,
-        size=9,
-        stroke=1, #this is new
+        size = 6,
+        stroke=1, 
         shape = 21,
         inherit.aes = FALSE
       )
