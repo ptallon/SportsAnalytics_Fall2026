@@ -207,7 +207,7 @@ visualize_single_play <- function(game_df,
     theme(panel.background = element_rect(fill = "forestgreen", 
                                           color = "forestgreen"), panel.grid = element_blank()) +
     guides(alpha = "none") +
-    transition_time(frameId)
+    transition_manual(frameId)
   
   frames_to_display <- length(unique(game_df$frameId))
   game_df$hms <- as_hms(game_df$time)
