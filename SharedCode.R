@@ -18,3 +18,91 @@ load_packages <- function(packages = c()) {
     }
   }
 }     
+
+# ---------------------------------------------------------------------------------
+# ---------------------- Animate a Single Play in a Game --------------------------
+# ---------------------------------------------------------------------------------
+# pass in a dataframe where you have filtered the gameId and playId.
+
+visualize_single_play <- function(game_df,
+                                  highlight_players_in_motion = FALSE,
+                                  show_targetXY = FALSE) {
+  
+  if(!length(unique(game_df$gameId)) == 1) {
+    stop('There is more than one gameId in your data. Please pass in a dataframe for the exact gameId and playId you want to visualize.')
+  }  
+  
+  load_packages(c("hms", "stringr", "gganimate", "gifski"))
+  
+  source('https://raw.githubusercontent.com/mlfurman3/gg_field/main/gg_field.R')
+  
+  g <- ggplot(data = game_df, aes(x = x, y = y), color=team, fill=team) +
+    # customize colors, shapes, and sizes of players and the football
+    scale_size_manual(values = c(6, 4, 6), guide = "none") +
+    scale_shape_manual(values = c(21, 16, 21), guide = "none") +
+    scale_fill_manual(values = c("firebrick1", "black", "dodgerblue1", "white"), 
+                      na.value = NA,
+                      guide="none") + 
+    scale_colour_manual(values = c("black", "#663300", "black","black"), 
+                        na.value = NA,
+                        guide="none") + 
+    
+    gg_field(yardmin = max(-5,min(game_df$x)-5), yardmax = min(max(game_df$x)+5, 125) ) +
+    
+    # add points to plot for all players and the football
+    geom_point(aes(shape = team, colour = team, size = team, fill = team))
+  
+  if(highlight_players_in_motion) {
+    g <- g + 
+      geom_point(data = game_df %>% filter(inMotionAtBallSnap == T), 
+                 aes(x = x, y = y), 
+                 shape = 21, 
+                 colour = ifelse(highlight_players_in_motion == T, "black", "NA"), 
+                 size = 6, 
+                 fill = ifelse(highlight_players_in_motion == T, "black", "NA"))    
+  }
+  
+  # show the target X and Y if both are not NA and the user wants to view this
+  if(show_targetXY) {
+    if( sum(!is.na(game_df$targetX)) != 0 & sum(!is.na(game_df$targetY)) != 0 ) {
+      g <- g + 
+        geom_point(aes(x = game_df$targetX, y = game_df$targetY), 
+                   shape=21, size = 6, colour="black", fill="white", alpha = 0.5) +
+        annotate("text", x = game_df$targetX, y = game_df$targetY, 
+                 label = "X", colour = "black", hjust = 0.5, vjust = 0.4)
+    }
+  }
+  
+  yardLine <- unique(game_df$absoluteYardlineNumber) + 20
+  
+  g <- g +
+    # insert jersey number for each player
+    geom_text( data = game_df %>% filter(team != "football"),
+               aes(x = x, y = y, 
+                   label = jerseyNumber), colour = "white", size = 3.5, vjust = 0.36 ) +
+    
+    # show the absolute line
+    annotate("segment", x = yardLine, xend = yardLine, y = 0, yend = 53.33, colour = "yellow", linewidth = 1) +
+    
+    # add some labels to report the play description
+    labs(title = game_df$playDescription) +
+    
+    # set the theme to dark green to color the areas beyond the end zones
+    theme(panel.background = element_rect(fill = "forestgreen", 
+                                          color = "forestgreen"), panel.grid = element_blank()) +
+    guides(alpha = "none") +
+    transition_time(frameId)
+  
+  frames_to_display <- length(unique(game_df$frameId))
+  game_df$hms <- as_hms(game_df$time)
+  game_df$seconds <- hour(game_df$hms)*3600 + minute(game_df$hms)*60 + second(game_df$hms)
+  fps <- frames_to_display/(max(game_df$seconds) - min(game_df$seconds))
+  
+  animate(g, 
+          fps=fps, 
+          nframe = frames_to_display, 
+          width = 480, 
+          height = 280, 
+          renderer = gifski_renderer() 
+  ) 
+}
