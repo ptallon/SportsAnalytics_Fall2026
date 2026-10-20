@@ -89,6 +89,7 @@ load_data_for_one_week <- function(directory,
 
 visualize_single_play <- function(game_df,
                                   highlight_players_in_motion = FALSE,
+                                  showBoundingBox = FALSE,
                                   show_targetXY = FALSE) {
   
   if(!length(unique(game_df$gameId)) == 1) {
@@ -115,6 +116,14 @@ visualize_single_play <- function(game_df,
     # add points to plot for all players and the football
     geom_point(aes(shape = team, colour = team, size = team, fill = team))
   
+  if(showBoundingBox) {
+    g <- g +
+      geom_rect(data = game_df %>% filter(team != "football"),
+                aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+                fill = team, alpha = 0.3, color = team)
+      
+  }
+
   if(highlight_players_in_motion) {
     g <- g + 
       geom_point(data = game_df %>% filter(inMotionAtBallSnap == T), 
