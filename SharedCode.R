@@ -17,7 +17,7 @@ load_packages <- function(packages = c()) {
       suppressMessages(suppressWarnings(library(i, character.only=T)))
     }
   }
-}     
+}      
 
 # ---------------------------------------------------------------------------------
 # ---------------------- Animate a Single Play in a Game --------------------------
