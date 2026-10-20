@@ -135,12 +135,11 @@ visualize_single_play <- function(game_df,
     g <- g +
       geom_point(
         data = game_df |>
-          filter(inMotionAtBallSnap %in% TRUE, 
-                 team != "football"),
-        aes(x = x, y = y,
+          filter(inMotionAtBallSnap == TRUE, team != "football"),
+        aes(x = x, y = y),
         colour = ifelse(highlight_players_in_motion == TRUE, "black", "NA"),
         fill = ifelse(highlight_players_in_motion == TRUE, "black", "NA"),
-        size = 6, shape = 21)
+        size = 6, shape = 21
         #inherit.aes = FALSE
       )
   }
