@@ -138,14 +138,14 @@ visualize_single_play <- function(game_df,
                   distinct(frameId, team, xmin, xmax, ymin, ymax),
                 aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
                     fill = team, color = team),
-                alpha = 0.2, linewidth = 1, inherit.aes = FALSE)
+                alpha = 0.2, linewidth = 0.8, inherit.aes = FALSE)
   }
   
   # add points to plot for all players and the football
   g <- g +     
     geom_point(aes(shape = team, colour = team, size = team, fill = team))
   
-  print("hi14")
+  print("hi16")
   
   if(highlight_players_in_motion) {
     g <- g +
@@ -178,9 +178,37 @@ visualize_single_play <- function(game_df,
   
   g <- g +
     # insert jersey number for each player
-    geom_text( data = game_df %>% filter(team != "football"),
-               aes(x = x, y = y, 
-                   label = jerseyNumber), colour = "white", size = 3.5, vjust = 0.36 ) +
+    #geom_text( data = game_df %>% filter(team != "football"),
+    #           aes(x = x, y = y, 
+    #               label = jerseyNumber), colour = "white", size = 3.5, vjust = 0.36 ) +
+    
+    # Black jersey numbers for players not highlighted
+    geom_text(
+      data = game_df |>
+        filter(
+          team != "football",
+          !highlight_players_in_motion |
+            !(inMotionAtBallSnap %in% TRUE)
+        ),
+      aes(x = x, y = y, label = jerseyNumber),
+      colour = "black",
+      size = 3.5,
+      vjust = 0.36
+    ) +
+    
+    # White jersey numbers for highlighted players in motion
+    geom_text(
+      data = game_df |>
+        filter(
+          team != "football",
+          highlight_players_in_motion,
+          inMotionAtBallSnap %in% TRUE
+        ),
+      aes(x = x, y = y, label = jerseyNumber),
+      colour = "white",
+      size = 3.5,
+      vjust = 0.36
+    )
     
     # add some labels to report the play description
     labs(title = game_df$playDescription) +
