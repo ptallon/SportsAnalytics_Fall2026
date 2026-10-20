@@ -130,7 +130,7 @@ visualize_single_play <- function(game_df,
   # add points to plot for all players and the football
   g <- g +     
     geom_point(aes(shape = team, colour = team, size = team, fill = team))
-  print("hi7") 
+  print("hi8") 
   
   motion_check <- game_df |>
     filter(team != "football") |>
@@ -139,7 +139,8 @@ visualize_single_play <- function(game_df,
       n_true = sum(inMotionAtBallSnap == TRUE, na.rm = TRUE),
       n_false = sum(inMotionAtBallSnap == FALSE, na.rm = TRUE),
       .groups = "drop"
-    )
+    ) |>
+    data.frame()
   
   print(motion_check)
   
