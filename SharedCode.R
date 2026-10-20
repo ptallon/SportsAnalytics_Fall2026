@@ -120,7 +120,7 @@ visualize_single_play <- function(game_df,
     g <- g +
       geom_rect(data = game_df %>% filter(team != "football"),
                 aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
-                    fill = team, color = team, alpha = 0.3))
+                    fill = team, color = team), alpha=0.3)
   }
 
   if(highlight_players_in_motion) {
