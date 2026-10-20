@@ -111,20 +111,21 @@ visualize_single_play <- function(game_df,
                         na.value = NA,
                         guide="none") + 
     
-    gg_field(yardmin = max(-5,min(game_df$x)-5), yardmax = min(max(game_df$x)+5, 125) ) +
+    gg_field(yardmin = max(-5,min(game_df$x)-5), yardmax = min(max(game_df$x)+5, 125) )
     
-    # add points to plot for all players and the football
-    geom_point(aes(shape = team, colour = team, size = team, fill = team))
-  
   if(showBoundingBox) {
     g <- g +
       geom_rect(data = game_df |> filter(team != "football") |>
                   distinct(frameId, team, xmin, xmax, ymin, ymax),
                 aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
                     fill = team, color = team),
-                alpha = 0.2, linewidth = 0.8)
+                alpha = 0.2, linewidth = 0.8, inherit.aes = FALSE)
   }
-
+  
+  # add points to plot for all players and the football
+  g <- g +     
+    geom_point(aes(shape = team, colour = team, size = team, fill = team))
+  
   if(highlight_players_in_motion) {
     g <- g + 
       geom_point(data = game_df %>% filter(inMotionAtBallSnap == T), 
