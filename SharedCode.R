@@ -104,14 +104,24 @@ visualize_single_play <- function(game_df,
   
   g <- ggplot(data = game_df, aes(x = x, y = y, color=team, fill=team)) +
     # customize colors, shapes, and sizes of players and the football
+    scale_fill_manual(values = c("home" = "dodgerblue1",
+                                 "away" = "firebrick1",
+                                 "football" = "brown")), guide = "none") +
+    
+    scale_colour_manual(values = c("home" = "black",
+                                   "away" = "black",
+                                   "football" = "663300"),guide = "none") +
+    
+    
+    
     scale_size_manual(values = c(6, 4, 6), guide = "none") +
     scale_shape_manual(values = c(21, 16, 21), guide = "none") +
-    scale_fill_manual(values = c("firebrick1", "black", "dodgerblue1", "white"), 
-                      na.value = NA,
-                      guide="none") + 
-    scale_colour_manual(values = c("black", "#663300", "black","black"), 
-                        na.value = NA,
-                        guide="none") + 
+    #scale_fill_manual(values = c("firebrick1", "black", "dodgerblue1", "white"), 
+    #                  na.value = NA,
+    #                  guide="none") + 
+    #scale_colour_manual(values = c("black", "#663300", "black","black"), 
+    #                    na.value = NA,
+    #                    guide="none") + 
     
     gg_field(yardmin = max(-5,min(game_df$x)-5), yardmax = min(max(game_df$x)+5, 125) ) +
     
@@ -130,7 +140,7 @@ visualize_single_play <- function(game_df,
   # add points to plot for all players and the football
   g <- g +     
     geom_point(aes(shape = team, colour = team, size = team, fill = team))
-  print("hi9")
+  print("hi10")
   
   if(highlight_players_in_motion) {
     g <- g +
