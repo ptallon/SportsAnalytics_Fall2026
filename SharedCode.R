@@ -113,12 +113,15 @@ visualize_single_play <- function(game_df,
     
     gg_field(yardmin = max(-5,min(game_df$x)-5), yardmax = min(max(game_df$x)+5, 125) )
     
+  # show the absolute line
+  annotate("segment", x = yardLine, xend = yardLine, y = 0, yend = 53.33, colour = "yellow", linewidth = 1) +
+  
   if(showBoundingBox) {
     g <- g +
       geom_rect(data = game_df |> filter(team != "football") |>
                   distinct(frameId, team, xmin, xmax, ymin, ymax),
                 aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
-                    fill = team, color = team),
+                    fill = "white", color = "black"),
                 alpha = 0.2, linewidth = 0.8, inherit.aes = FALSE)
   }
   
@@ -130,13 +133,14 @@ visualize_single_play <- function(game_df,
     g <- g +
       geom_point(
         data = game_df |>
-          filter(inMotionAtBallSnap %in% TRUE, team != "football"),
+          filter(inMotionAtBallSnap %in% TRUE, 
+                 team != "football"),
         aes(x = x, y = y),
         shape = 21,
         colour = ifelse(highlight_players_in_motion == TRUE, "black", "NA"),
         fill = ifelse(highlight_players_in_motion == TRUE, "black", "NA"),
-        size = 6,
-        inherit.aes = FALSE
+        size = 6
+        #inherit.aes = FALSE
       )
   }
   
@@ -158,9 +162,6 @@ visualize_single_play <- function(game_df,
     geom_text( data = game_df %>% filter(team != "football"),
                aes(x = x, y = y, 
                    label = jerseyNumber), colour = "white", size = 3.5, vjust = 0.36 ) +
-    
-    # show the absolute line
-    annotate("segment", x = yardLine, xend = yardLine, y = 0, yend = 53.33, colour = "yellow", linewidth = 1) +
     
     # add some labels to report the play description
     labs(title = game_df$playDescription) +
