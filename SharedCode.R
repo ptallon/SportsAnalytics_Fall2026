@@ -20,6 +20,69 @@ load_packages <- function(packages = c()) {
 }      
 
 # ---------------------------------------------------------------------------------
+# --------------------- Load & Merge Data for a Single Week -----------------------
+# ---------------------------------------------------------------------------------
+# read in the data file for a given week and optionally merge with other data
+# x and y coordinates are also revised in order to have consistent play directions
+load_data_for_one_week <- function(directory,
+                                   weekNumber = 1,
+                                   merge      = F,
+                                   columns    = c()) {
+  
+  if (missing(directory) | missing(weekNumber) | !weekNumber %in% seq(9) ) {
+    if (missing(directory)) {
+      print('You did not specify a directory for your data files. Where are your files located?')
+    }
+    if (missing(weekNumber) | !weekNumber %in% seq(9)  ) {
+      print('You did not specify a valid week number (valid numbers are 1 to 9).')
+    }
+    stop('Function aborting: unable to run due to missing parameters.')
+  }
+  
+  load_packages(c("data.table", "dplyr"))
+  
+  filename <- paste0(directory, "/tracking_week_",weekNumber,".csv")
+  df <- fread(filename)
+  
+  if (merge == T) {
+    plays       <- fread(paste0(directory, "/plays.csv"))           #  16124 rows x 50 columns
+    players     <- fread(paste0(directory, "/players.csv"))         #   1697 rows x  7 columns
+    games       <- fread(paste0(directory, "/games.csv"))           #    136 rows x  9 columns
+    player_play <- fread(paste0(directory, "/player_play.csv"))     # 354727 rows x 50 columns
+    
+    df <- left_join(df, games,       by = c("gameId"))
+    df <- left_join(df, plays,       by = c("gameId", "playId"))
+    df <- left_join(df, players,     by = c("nflId", "displayName"))
+    df <- left_join(df, player_play, by = c("gameId", "playId", "nflId"))
+  }
+  
+  # based on the direction of the play, map the x and y coordinates to be consistently in one direction
+  df <- df %>%
+    mutate( x = ifelse(playDirection == "right", 120-x, x),
+            y = ifelse(playDirection == "right", 160/3-y, y),
+            targetX = ifelse(playDirection == "right", 120-targetX, targetX),
+            absoluteYardlineNumber = ifelse(playDirection == "right", 100 - absoluteYardlineNumber, absoluteYardlineNumber)
+    ) %>%
+    data.frame()
+  
+  df  <- df %>%
+    mutate( team = ifelse( club == homeTeamAbbr, "home", ifelse( club == "football", "football", "away"))) %>%
+    mutate( team = factor(team, levels = c("away", "football", "home"))) %>%
+    data.frame()
+  
+  if(length(columns) > 0) {
+    for(col in columns) {
+      if(!col %in% colnames(df)) {
+        stop(paste("Check the columns you want as",col,"is not in the data frame. No data frame returned."))
+      }
+    }
+    df <- df %>%
+      select(unique(columns)) %>% data.frame()
+  }
+  return(df)
+}
+
+# ---------------------------------------------------------------------------------
 # ---------------------- Animate a Single Play in a Game --------------------------
 # ---------------------------------------------------------------------------------
 # pass in a dataframe where you have filtered the gameId and playId.
