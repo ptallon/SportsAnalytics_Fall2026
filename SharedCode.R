@@ -130,16 +130,20 @@ visualize_single_play <- function(game_df,
   # add points to plot for all players and the football
   g <- g +     
     geom_point(aes(shape = team, colour = team, size = team, fill = team))
-  print("hi5")
+  print("hi6")
   if(highlight_players_in_motion) {
     g <- g +
       geom_point(
         data = game_df |>
-          filter(inMotionAtBallSnap == TRUE, team != "football"),
-        aes(x = x, y = y,
-        colour = ifelse(inMotionAtBallSnap == TRUE, "black", NA),
-        fill = ifelse(inMotionAtBallSnap == TRUE, "black", NA)),
-        size = 6, shape = 21,
+          filter(
+            inMotionAtBallSnap == TRUE,
+            team != "football"
+          ),
+        aes(x = x, y = y),
+        colour = "black",
+        fill = "black",
+        size = 6,
+        shape = 21,
         inherit.aes = FALSE
       )
   }
