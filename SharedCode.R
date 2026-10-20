@@ -130,19 +130,7 @@ visualize_single_play <- function(game_df,
   # add points to plot for all players and the football
   g <- g +     
     geom_point(aes(shape = team, colour = team, size = team, fill = team))
-  print("hi8")
-  
-  motion_check <- game_df |>
-    filter(team != "football") |>
-    group_by(nflId, jerseyNumber, team) |>
-    summarise(
-      n_true = sum(inMotionAtBallSnap == TRUE, na.rm = TRUE),
-      n_false = sum(inMotionAtBallSnap == FALSE, na.rm = TRUE),
-      .groups = "drop"
-    ) |>
-    data.frame()
-  
-  print(motion_check)
+  print("hi9")
   
   if(highlight_players_in_motion) {
     g <- g +
@@ -153,9 +141,11 @@ visualize_single_play <- function(game_df,
             team != "football"
           ),
         aes(x = x, y = y),
-        colour = "black",
-        fill = "black",
-        size = 6,
+        colour = "yellow",
+        fill = NA,
+        #size = 6,
+        size=9,
+        stroke=2, #this is new
         shape = 21,
         inherit.aes = FALSE
       )
