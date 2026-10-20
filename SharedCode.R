@@ -130,7 +130,7 @@ visualize_single_play <- function(game_df,
     g <- g +
       geom_point(
         data = game_df |>
-          filter(inMotionAtBallSnap %in% TRUE),
+          filter(inMotionAtBallSnap %in% TRUE, team != "football"),
         aes(x = x, y = y),
         shape = 21,
         colour = ifelse(highlight_players_in_motion == TRUE, "black", "NA"),
