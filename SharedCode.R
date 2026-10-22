@@ -237,7 +237,7 @@ make_voronoi <- function(frame_df) {
       polygon_sf,
       bbox_sf
     )
-  )
+  ) 
   
   # Add identifying variables
   clipped$gameId <- first(frame_df$gameId)
