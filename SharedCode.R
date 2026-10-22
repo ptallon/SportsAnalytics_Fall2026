@@ -255,6 +255,72 @@ make_voronoi <- function(frame_df) {
 }
 
 # ---------------------------------------------------------------------------------
+# -------------------- Add Voronoi Polygons to a data frame -----------------------
+# ---------------------------------------------------------------------------------
+# pass in a dataframe for a single play and add Voronoi polygons to it.
+# bounding box information needs to be included in the game_df
+add_voronoi_to_df <- function(game_df) {
+  
+  load_packages(c("sf"))
+  
+  # check for required columns
+  
+  required_columns <- c("gameId", "playId", "frameId", "team", 
+                        "nflId", "x", "y", 
+                        "xmin", "xmax", "ymin", "ymax", "side")
+  missing_columns <- setdiff(
+    required_columns,
+    names(game_df)
+  )
+  
+  if (length(missing_columns) > 0) {
+    stop("Missing required columns: ", paste(missing_columns, collapse = ", ")
+    )
+  }
+  
+  # Calculate Voronoi polygons
+  voronoi_df <- game_df |>
+    filter(team != "football") |>
+    group_by(gameId, playId, frameId, team) |>
+    group_split() |>
+    map(make_voronoi) |>
+    compact() |>
+    bind_rows()
+  
+  if (nrow(voronoi_df) == 0) {
+    stop("No Voronoi polygons were generated.")
+  }
+  
+  # Extract geometry and area 
+  voronoi_attributes <- voronoi_df |>
+    mutate(voronoi_polygon = st_geometry(.)) |>
+    st_drop_geometry() |>
+    select(gameId, playId, frameId, team, nflId,
+           voronoi_area, voronoi_polygon)
+  
+  # left join polygons to original tracking data
+  result <- game_df |>
+    left_join(voronoi_attributes,
+              by = c("gameId", "playId", "frameId", "team", "nflId"))
+  
+  # return the result
+  return(result)
+}
+
+# ---------------------------------------------------------------------------------
+# -------------------- Add bounding box to a single play --------------------------
+# ---------------------------------------------------------------------------------
+# pass in a dataframe and include xmin, xmax, ymin, and ymax details
+# you can specify how many yards you want the bounding box to be from the
+# line of scrimmage at the ball snap, and thereafter
+add_boundingbox_to_df <- function(game_df,
+                                  bufferAtBallSnap = 0,
+                                  bufferAfterBallSnap = 0) {
+ # we will build up the code for this function 
+}
+
+
+# ---------------------------------------------------------------------------------
 # ---------------------- Animate a Single Play in a Game --------------------------
 # ---------------------------------------------------------------------------------
 # pass in a dataframe where you have filtered the gameId and playId.
@@ -345,8 +411,6 @@ visualize_single_play <- function(game_df,
     # show the absolute line
     annotate("segment", x = yardLine, xend = yardLine, y = 0, yend = 53.33, colour = "yellow", linewidth = 1) 
 
-    print("2")
-    
   # Add Voronoi polygons
   if (showVoronoi) {
     g <- g + geom_polygon(data = voronoi_plot_df,
