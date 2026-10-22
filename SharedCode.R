@@ -344,7 +344,7 @@ visualize_single_play <- function(game_df,
     
     # show the absolute line
     annotate("segment", x = yardLine, xend = yardLine, y = 0, yend = 53.33, colour = "yellow", linewidth = 1) 
-  
+  print("1")
   # Add Voronoi polygons
   if (showVoronoi) {
     g <- g + geom_polygon(data = voronoi_plot_df,
