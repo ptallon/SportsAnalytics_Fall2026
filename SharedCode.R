@@ -244,14 +244,16 @@ make_voronoi <- function(frame_df) {
   clipped$playId <- first(frame_df$playId)
   clipped$frameId <- first(frame_df$frameId)
   clipped$team <- first(frame_df$team)
-  clipped$side <- first(frame_df$side)
+  if ("side" %in% names(frame_df)) {
+    clipped$side <- first(frame_df$side)
+  } 
   
   # Calculate area of each polygon
   clipped$voronoi_area <- as.numeric(
     st_area(clipped)
   )
   
-  return(clipped)
+  return(clipped) 
 }
 
 # ---------------------------------------------------------------------------------
@@ -267,7 +269,7 @@ add_voronoi_to_df <- function(game_df) {
   
   required_columns <- c("gameId", "playId", "frameId", "team", 
                         "nflId", "x", "y", 
-                        "xmin", "xmax", "ymin", "ymax", "side")
+                        "xmin", "xmax", "ymin", "ymax")
   missing_columns <- setdiff(
     required_columns,
     names(game_df)
@@ -342,7 +344,7 @@ visualize_single_play <- function(game_df,
   
   if (showVoronoi) {
     # Check that bounding box variables exist
-    required_columns <- c("xmin", "xmax", "ymin", "ymax", "nflId", "side")
+    required_columns <- c("xmin", "xmax", "ymin", "ymax", "nflId")
     missing_columns <- setdiff(required_columns, names(game_df))
     
     if (length(missing_columns) > 0) {
