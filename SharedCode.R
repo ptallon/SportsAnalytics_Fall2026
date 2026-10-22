@@ -295,6 +295,23 @@ visualize_single_play <- function(game_df,
       compact() |>
       bind_rows()
     
+    # Convert Voronoi polygons to ordinary coordinates
+    # for compatibility with gg_field and gganimate
+    
+    voronoi_df <- voronoi_df |>
+      sf::st_cast("MULTIPOLYGON") |>
+      sf::st_cast("POLYGON", warn = FALSE) |>
+      mutate(polygon_id = row_number())
+    
+    coords <- sf::st_coordinates(voronoi_df)
+    
+    voronoi_plot_df <- cbind(
+      sf::st_drop_geometry(voronoi_df)[coords[, "L2"], ],
+      x = coords[, "X"],
+      y = coords[, "Y"],
+      ring = coords[, "L1"]
+    )
+    
     if (nrow(voronoi_df) == 0) {
       stop("No Voronoi polygons were generated. Check your dataframe.")
     }
@@ -329,15 +346,17 @@ visualize_single_play <- function(game_df,
     annotate("segment", x = yardLine, xend = yardLine, y = 0, yend = 53.33, colour = "yellow", linewidth = 1) 
   
   # Add Voronoi polygons
-
-  if (showVoronoi) { 
-    g <- g +
-      geom_sf(data = voronoi_df, aes(fill = team, group = interaction(team, nflId)),
-              inherit.aes = FALSE,
-              alpha = 0.30,
-              colour = "white",
-              linewidth = 0.4)
-    }
+  if (showVoronoi) {
+    g <- g + geom_polygon(data = voronoi_plot_df,
+                          aes(x = x, y = y, fill = team,
+                              group = interaction(frameId, polygon_id, ring)
+                              ),
+                          inherit.aes = FALSE,
+                          alpha = 0.30,
+                          colour = "white",
+                          linewidth = 0.4
+      )
+  }
   
   if(showBoundingBox) {
     g <- g +
@@ -416,7 +435,7 @@ visualize_single_play <- function(game_df,
     ) +
     
     # add some labels to report the play description
-    labs(title = game_df$playDescription) +
+    labs(title = first(game_df$playDescription)) +
     
     # set the theme to dark green to color the areas beyond the end zones
     theme(panel.background = element_rect(fill = "forestgreen", 
@@ -428,10 +447,10 @@ visualize_single_play <- function(game_df,
   game_df$hms <- as_hms(game_df$time)
   game_df$seconds <- hour(game_df$hms)*3600 + minute(game_df$hms)*60 + second(game_df$hms)
   fps <- frames_to_display/(max(game_df$seconds) - min(game_df$seconds))
-  
+
   animate(g, 
           fps=fps, 
-          nframe = frames_to_display, 
+          nframes = frames_to_display, 
           width = 480, 
           height = 280, 
           renderer = gifski_renderer() 
