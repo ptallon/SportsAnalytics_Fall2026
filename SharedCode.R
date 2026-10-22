@@ -83,6 +83,178 @@ load_data_for_one_week <- function(directory,
 }
 
 # ---------------------------------------------------------------------------------
+# -------------------- Add Voronoi Tessellation to each Frame ----------------------
+# ---------------------------------------------------------------------------------
+# pass in a dataframe and include Tesselation Polygons for each player for each frame
+make_voronoi <- function(frame_df) {
+  
+  # Exclude football and players without valid coordinates
+  frame_df <- frame_df |>
+    filter(
+      team != "football",
+      !is.na(nflId),
+      !is.na(x),
+      !is.na(y)
+    ) |>
+    distinct(nflId, .keep_all = TRUE)
+  
+  if (nrow(frame_df) < 2) return(NULL)
+  
+  # Get bounding box coordinates
+  xmin <- first(frame_df$xmin)
+  xmax <- first(frame_df$xmax)
+  ymin <- first(frame_df$ymin)
+  ymax <- first(frame_df$ymax)
+  
+  # Check bounding box validity
+  if (
+    any(!is.finite(c(xmin, xmax, ymin, ymax))) ||
+    xmin >= xmax ||
+    ymin >= ymax
+  ) {
+    return(NULL)
+  }
+  
+  # Create bounding box as an sfc polygon
+  bbox <- st_sfc(
+    st_polygon(list(rbind(
+      c(xmin, ymin),
+      c(xmax, ymin),
+      c(xmax, ymax),
+      c(xmin, ymax),
+      c(xmin, ymin)
+    )))
+  )
+  
+  # Check for duplicate player positions
+  if (
+    nrow(distinct(frame_df, x, y)) != nrow(frame_df)
+  ) {
+    warning(
+      "Duplicate player coordinates in frame ",
+      first(frame_df$frameId),
+      " for team ",
+      first(frame_df$team)
+    )
+    return(NULL)
+  }
+  
+  # Convert player coordinates into sf points
+  players_sf <- st_as_sf(
+    frame_df,
+    coords = c("x", "y"),
+    remove = FALSE
+  )
+  
+  # Create a MULTIPOINT geometry
+  player_points <- st_combine(
+    st_geometry(players_sf)
+  )
+  
+  # Create an envelope larger than the clipping boundary
+  margin <- max(
+    xmax - xmin,
+    ymax - ymin,
+    1
+  ) * 2
+  
+  envelope <- st_as_sfc(
+    st_bbox(c(
+      xmin = xmin - margin,
+      ymin = ymin - margin,
+      xmax = xmax + margin,
+      ymax = ymax + margin
+    ))
+  )
+  
+  # Generate Voronoi tessellation
+  voronoi <- st_voronoi(
+    player_points,
+    envelope = envelope
+  )
+  
+  # Extract individual polygon geometries
+  voronoi_polygons <- st_collection_extract(
+    voronoi,
+    "POLYGON"
+  )
+  
+  # Convert to individual polygons if needed
+  voronoi_polygons <- st_cast(
+    voronoi_polygons,
+    "POLYGON"
+  )
+  
+  # Construct sf object
+  polygon_sf <- st_sf(
+    geometry = voronoi_polygons
+  )
+  
+  # Match each Voronoi polygon to its player
+  matches <- st_intersects(
+    polygon_sf,
+    players_sf
+  )
+  
+  player_index <- vapply(
+    matches,
+    function(i) {
+      if (length(i) == 1) {
+        i
+      } else {
+        NA_integer_
+      }
+    },
+    integer(1)
+  )
+  
+  # Validate polygon-player matching
+  if (
+    length(player_index) != nrow(players_sf) ||
+    anyNA(player_index) ||
+    anyDuplicated(player_index)
+  ) {
+    warning(
+      "Unable to uniquely match Voronoi cells to players in frame ",
+      first(frame_df$frameId),
+      " for team ",
+      first(frame_df$team)
+    )
+    return(NULL)
+  }
+  
+  # Attach player IDs
+  polygon_sf$nflId <- players_sf$nflId[player_index]
+  
+  # Create bounding box sf object
+  bbox_sf <- st_sf(
+    geometry = bbox
+  )
+  
+  # Clip Voronoi polygons to bounding box
+  clipped <- suppressWarnings(
+    st_intersection(
+      polygon_sf,
+      bbox_sf
+    )
+  )
+  
+  # Add identifying variables
+  clipped$gameId <- first(frame_df$gameId)
+  clipped$playId <- first(frame_df$playId)
+  clipped$frameId <- first(frame_df$frameId)
+  clipped$team <- first(frame_df$team)
+  clipped$side <- first(frame_df$side)
+  
+  # Calculate area of each polygon
+  clipped$voronoi_area <- as.numeric(
+    st_area(clipped)
+  )
+  
+  return(clipped)
+}
+
+# ---------------------------------------------------------------------------------
 # ---------------------- Animate a Single Play in a Game --------------------------
 # ---------------------------------------------------------------------------------
 # pass in a dataframe where you have filtered the gameId and playId.
@@ -90,14 +262,46 @@ load_data_for_one_week <- function(directory,
 visualize_single_play <- function(game_df,
                                   highlight_players_in_motion = FALSE,
                                   showBoundingBox = FALSE,
+                                  showVoronoi = FALSE,
                                   show_targetXY = FALSE) {
   
   if(!length(unique(game_df$gameId)) == 1) {
     stop('There is more than one gameId in your data. Please pass in a dataframe for the exact gameId and playId you want to visualize.')
-  }  
+  } 
   
-  load_packages(c("hms", "stringr", "gganimate", "gifski"))
+  if(showVoronoi & !showBoundingBox) {
+    #show the bounding box around the Voronoi Tesselation
+    showBoundingBox = TRUE
+  }
   
+  if (showVoronoi) {
+    # Check that bounding box variables exist
+    required_columns <- c("xmin", "xmax", "ymin", "ymax", "nflId", "side")
+    missing_columns <- setdiff(required_columns, names(game_df))
+    
+    if (length(missing_columns) > 0) {
+      stop("Missing columns required for Voronoi tessellation: ",
+           paste(missing_columns, collapse = ", "))
+    }
+    
+    load_packages(c("dplyr", "purrr"))
+    
+    # Create Voronoi polygons for each team and frame
+    voronoi_df <- game_df |>
+      filter(team != "football") |>
+      group_by(gameId, playId, frameId, team) |>
+      group_split() |>
+      map(make_voronoi) |>
+      compact() |>
+      bind_rows()
+    
+    if (nrow(voronoi_df) == 0) {
+      stop("No Voronoi polygons were generated. Check your dataframe.")
+    }
+  }
+  
+  load_packages(c("hms", "stringr", "gganimate", "gifski", "sf", "dplyr"))
+
   source('https://raw.githubusercontent.com/mlfurman3/gg_field/main/gg_field.R')
   
   yardLine <- unique(game_df$absoluteYardlineNumber) + 20
@@ -123,6 +327,17 @@ visualize_single_play <- function(game_df,
     
     # show the absolute line
     annotate("segment", x = yardLine, xend = yardLine, y = 0, yend = 53.33, colour = "yellow", linewidth = 1) 
+  
+  # Add Voronoi polygons
+
+  if (showVoronoi) {
+    g <- g +
+      geom_sf(data = voronoi_df, aes(fill = team, group = interaction(team, nflId)),
+              inherit.aes = FALSE,
+              alpha = 0.30,
+              colour = "white",
+              linewidth = 0.4)
+    }
   
   if(showBoundingBox) {
     g <- g +
