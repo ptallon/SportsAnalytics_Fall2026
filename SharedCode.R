@@ -330,7 +330,7 @@ visualize_single_play <- function(game_df,
   
   # Add Voronoi polygons
 
-  if (showVoronoi) {
+  if (showVoronoi) { 
     g <- g +
       geom_sf(data = voronoi_df, aes(fill = team, group = interaction(team, nflId)),
               inherit.aes = FALSE,
