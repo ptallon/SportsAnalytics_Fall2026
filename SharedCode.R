@@ -344,7 +344,9 @@ visualize_single_play <- function(game_df,
     
     # show the absolute line
     annotate("segment", x = yardLine, xend = yardLine, y = 0, yend = 53.33, colour = "yellow", linewidth = 1) 
-  print("1")
+
+    print("2")
+    
   # Add Voronoi polygons
   if (showVoronoi) {
     g <- g + geom_polygon(data = voronoi_plot_df,
@@ -401,11 +403,6 @@ visualize_single_play <- function(game_df,
   }
   
   g <- g +
-    # insert jersey number for each player
-    #geom_text( data = game_df %>% filter(team != "football"),
-    #           aes(x = x, y = y, 
-    #               label = jerseyNumber), colour = "white", size = 3.5, vjust = 0.36 ) +
-    
     # Black jersey numbers for players not highlighted
     geom_text(
       data = game_df |>
@@ -418,24 +415,22 @@ visualize_single_play <- function(game_df,
       colour = "black",
       size = 3.2,
       vjust = 0.36
-    ) +
+    ) 
     
-    # White jersey numbers for highlighted players in motion
-    geom_text(
-      data = game_df |>
-        filter(
-          team != "football",
-          highlight_players_in_motion,
-          inMotionAtBallSnap %in% TRUE
-        ),
-      aes(x = x, y = y, label = jerseyNumber),
-      colour = "white",
-      size = 3.2,
-      vjust = 0.36
-    ) +
+    if(highlight_players_in_motion) {
+      # White jersey numbers for highlighted players in motion
+      g <- g + geom_text(data = game_df |>
+                  filter(team != "football",
+                         highlight_players_in_motion,
+                         inMotionAtBallSnap %in% TRUE),
+                aes(x = x, y = y, label = jerseyNumber),
+                colour = "white",
+                size = 3.2,
+                vjust = 0.36)
+      }
     
     # add some labels to report the play description
-    labs(title = first(game_df$playDescription)) +
+    g <- g + labs(title = first(game_df$playDescription)) +
     
     # set the theme to dark green to color the areas beyond the end zones
     theme(panel.background = element_rect(fill = "forestgreen", 
