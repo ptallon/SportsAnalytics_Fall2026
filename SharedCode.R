@@ -607,8 +607,8 @@ visualize_single_play <- function(game_df,
             height = 640, 
             renderer = gifski_renderer() 
     )
-    anim_save("Mod2_Animation.gif", animation = anim)
-    print(paste0("Animation saved as ", getwd(), "/Mod2_Animation.gif"))
+    anim_save("Assignment2_Animation.gif", animation = anim)
+    print(paste0("Animation saved as ", getwd(), "/Assignment2_Animation.gif"))
   } 
   
 }
