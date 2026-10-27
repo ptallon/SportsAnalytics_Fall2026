@@ -603,8 +603,8 @@ visualize_single_play <- function(game_df,
     large_anim <- animate(g, 
             fps=fps, 
             nframes = frames_to_display, 
-            width = 800, 
-            height = 467, 
+            width = 480, 
+            height = 280, 
             renderer = gifski_renderer() 
     )
     anim_save("Assignment2_Animation.gif", animation = large_anim)
