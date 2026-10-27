@@ -602,6 +602,6 @@ visualize_single_play <- function(game_df,
   
   if(saveAnimation) {
     anim_save("my_animation.gif", animation = anim)
-    print(paste("Animation saved as", getwd(), "/Mod2_Animation.gif"))
+    print(paste0("Animation saved as ", getwd(), "/Mod2_Animation.gif"))
   }
 }
