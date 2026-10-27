@@ -412,7 +412,8 @@ visualize_single_play <- function(game_df,
                                   highlight_players_in_motion = FALSE,
                                   showBoundingBox = FALSE,
                                   showVoronoi = FALSE,
-                                  show_targetXY = FALSE) {
+                                  show_targetXY = FALSE,
+                                  saveAnimation = FALSE) {
   
   if(!length(unique(game_df$gameId)) == 1) {
     stop('There is more than one gameId in your data. Please pass in a dataframe for the exact gameId and playId you want to visualize.')
@@ -590,11 +591,17 @@ visualize_single_play <- function(game_df,
   game_df$seconds <- hour(game_df$hms)*3600 + minute(game_df$hms)*60 + second(game_df$hms)
   fps <- frames_to_display/(max(game_df$seconds) - min(game_df$seconds))
 
-  animate(g, 
+  anim <- animate(g, 
           fps=fps, 
           nframes = frames_to_display, 
           width = 480, 
           height = 280, 
           renderer = gifski_renderer() 
   ) 
+  anim
+  
+  if(saveAnimation) {
+    anim_save("my_animation.gif", animation = anim)
+    print(paste("Animation saved as", getwd(), "/Mod2_Animation.gif"))
+  }
 }
