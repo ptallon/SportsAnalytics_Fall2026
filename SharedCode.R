@@ -85,7 +85,7 @@ load_data_for_one_week <- function(directory,
 # ---------------------------------------------------------------------------------
 # -------------------- Add Voronoi Tessellation to each Frame ----------------------
 # ---------------------------------------------------------------------------------
-# pass in a dataframe and include Tesselation Polygons for each player for each frame
+# pass in a dataframe and include Tessellation Polygons for each player for each frame
 make_voronoi <- function(frame_df) {
   
   # Exclude football and players without valid coordinates
@@ -260,7 +260,7 @@ make_voronoi <- function(frame_df) {
 # -------------------- Add Voronoi Polygons to a data frame -----------------------
 # ---------------------------------------------------------------------------------
 # pass in a dataframe for a single play and add Voronoi polygons to it.
-# bounding box information needs to be included in the game_df
+# bounding box information needs to be included in the game_df beforehand
 add_voronoi_to_df <- function(game_df) {
   
   load_packages(c("sf"))
@@ -316,11 +316,92 @@ add_voronoi_to_df <- function(game_df) {
 # you can specify how many yards you want the bounding box to be from the
 # line of scrimmage at the ball snap, and thereafter
 add_boundingbox_to_df <- function(game_df,
-                                  bufferAtBallSnap = 0,
-                                  bufferAfterBallSnap = 0) {
- # we will build up the code for this function 
+                                  BufferFromLineOfScrimmage = 0,
+                                  BufferFromTopOfBoundingBox = 0,
+                                  BufferFromBottomOfBoundingBox = 0,
+                                  BufferFromSidesFurthestFromLineOfScrimmage = 0,
+                                  GeneralBuffer = 0) {
+  
+  buffers <- c(
+    BufferFromLineOfScrimmage, BufferFromTopOfBoundingBox,
+    BufferFromBottomOfBoundingBox, BufferFromSidesFurthestFromLineOfScrimmage,
+    GeneralBuffer
+  )
+  
+  if (any(buffers < 0 | buffers > 10)) {
+    stop("Buffer values must be between 0 and 10.")
+  }
+  
+  load_packages("dplyr")
+  
+  if (n_distinct(game_df$gameId) != 1 || n_distinct(game_df$playId) != 1) {
+    stop("The dataframe you're working with must contain only one gameId and one playId.\nPlease filter the dataframe before calling this function.")
+  }
+ 
+  group_by(gameId, playId, team, frameId) |>
+  # set the line of scrimmage
+  mutate(
+    yardLine = first(absoluteYardlineNumber) + 20,
+      
+    # add in the original boundaries of the box before adding any buffers
+    xmin = min(x, na.rm = 0), 
+    xmax = max(x, na.rm = 0),
+    ymin = min(y, na.rm = 0),
+    ymax = max(y, na.rm = 0)) |>
+  ungroup() |>
+    
+  # find the frame where the ball is snapped
+  group_by(gameId, playId) |>
+  mutate(snap_frame = min(frameId[event=="ball_snap"], na.rm=TRUE)) |>
+  ungroup() |>
+    
+  # determine which side of the line of scrimmage a team is on
+  group_by(gameId, playId, team) |>
+  arrange(frameId, .by_group = TRUE) |>
+  mutate(
+      side = if_else((first(xmin) + first(xmax))/2 < first(yardLine),
+                     "left",
+                     "right")) |>
+  ungroup() |>
+    
+  mutate(
+  # set the left boundary for xmin
+    xmin = case_when(
+        #before and at the ball snap
+        frameId <= snap_frame & side == "left" ~
+          xmin - BufferFromSidesFurthestFromLineOfScrimmage,
+        frameId <= snap_frame & side == "right" ~
+          pmax(xmin - BufferFromSidesFurthestFromLineOfScrimmage, yardLine + BufferFromLineOfScrimmage),
+        
+        # after the ball snap, unrestricted expansion
+        frameId > snap_frame ~
+          xmin - GeneralBuffer,
+        TRUE ~ xmin
+      ),
+      
+    # set the boundary on the right
+    xmax = case_when(
+        #before and at the ball snap
+        frameId <= snap_frame & side == "left" ~
+          pmin(xmax + BufferFromSidesFurthestFromLineOfScrimmage, 
+               yardLine - BufferFromLineOfScrimmage),
+        frameId <= snap_frame & side == "right" ~
+          xmax + BufferFromSidesFurthestFromLineOfScrimmage,
+        
+        #after the ball is snapped, no restrictions
+        frameId > snap_frame ~
+          xmax + GeneralBuffer,
+        TRUE ~ xmax
+    ),
+      
+    # expand the Y boundaries by a buffer without going over the sideline
+    ymin = ifelse(ymin - BufferFromBottomOfBoundingBox < 0, ymin, 
+                    ymin - BufferFromBottomOfBoundingBox),
+    ymax = ifelse(ymax + BufferFromTopOfBoundingBox > 160/3, ymax, 
+                    ymax + BufferFromTopOfBoundingBox)) |>
+    ungroup() |>
+    data.frame()
 }
-
 
 # ---------------------------------------------------------------------------------
 # ---------------------- Animate a Single Play in a Game --------------------------
@@ -352,7 +433,7 @@ visualize_single_play <- function(game_df,
            paste(missing_columns, collapse = ", "))
     }
     
-    load_packages(c("dplyr", "purrr"))
+    load_packages(c("dplyr", "purrr", "sf"))
     
     # Create Voronoi polygons for each team and frame
     voronoi_df <- game_df |>
