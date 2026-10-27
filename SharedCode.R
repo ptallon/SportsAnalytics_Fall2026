@@ -611,4 +611,6 @@ visualize_single_play <- function(game_df,
     print(paste0("Animation saved as ", getwd(), "/Assignment2_Animation.gif"))
   } 
   
+  anim
+  
 }
