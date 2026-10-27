@@ -591,7 +591,7 @@ visualize_single_play <- function(game_df,
   game_df$seconds <- hour(game_df$hms)*3600 + minute(game_df$hms)*60 + second(game_df$hms)
   fps <- frames_to_display/(max(game_df$seconds) - min(game_df$seconds))
 
-  animate(g, 
+  small_anim <- animate(g, 
           fps=fps, 
           nframes = frames_to_display, 
           width = 480, 
@@ -600,17 +600,17 @@ visualize_single_play <- function(game_df,
   ) 
 
   if (saveAnimation) {
-    anim <- animate(g, 
+    large_anim <- animate(g, 
             fps=fps, 
             nframes = frames_to_display, 
-            width = 1098, 
-            height = 640, 
+            width = 800, 
+            height = 467, 
             renderer = gifski_renderer() 
     )
-    anim_save("Assignment2_Animation.gif", animation = anim)
+    anim_save("Assignment2_Animation.gif", animation = large_anim)
     print(paste0("Animation saved as ", getwd(), "/Assignment2_Animation.gif"))
   } 
   
-  anim
+  small_anim
   
 }
