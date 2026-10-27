@@ -591,17 +591,24 @@ visualize_single_play <- function(game_df,
   game_df$seconds <- hour(game_df$hms)*3600 + minute(game_df$hms)*60 + second(game_df$hms)
   fps <- frames_to_display/(max(game_df$seconds) - min(game_df$seconds))
 
-  anim <- animate(g, 
+  animate(g, 
           fps=fps, 
           nframes = frames_to_display, 
           width = 480, 
           height = 280, 
           renderer = gifski_renderer() 
   ) 
-  anim
-  
-  if(saveAnimation) {
-    anim_save("my_animation.gif", animation = anim)
+
+  if (saveAnimation) {
+    anim <- animate(g, 
+            fps=fps, 
+            nframes = frames_to_display, 
+            width = 1098, 
+            height = 640, 
+            renderer = gifski_renderer() 
+    )
+    anim_save("Mod2_Animation.gif", animation = anim)
     print(paste0("Animation saved as ", getwd(), "/Mod2_Animation.gif"))
-  }
+  } 
+  
 }
