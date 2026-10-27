@@ -334,7 +334,7 @@ add_boundingbox_to_df <- function(game_df,
   
   load_packages("dplyr")
   
-  if (n_distinct(game_df$gameId) != 1 || n_distinct(game_df$playId) != 1) {
+  if (n_distinct(game_df$gameId) != 1 | n_distinct(game_df$playId) != 1) {
     stop("The dataframe you're working with must contain only one gameId and one playId.\nPlease filter the dataframe before calling this function.")
   }
  
