@@ -260,52 +260,52 @@ make_voronoi <- function(frame_df) {
   
   # Calculate polygon compactness
   # 1 = perfect circle; smaller values = less compact
-  clipped$voronoi_compactness <-
-    4 * pi * clipped$voronoi_area /
-    clipped$voronoi_perimeter^2
+#  clipped$voronoi_compactness <-
+#    4 * pi * clipped$voronoi_area /
+#    clipped$voronoi_perimeter^2
   
   # Calculate polygon centroids
-  centroids <- st_centroid(st_geometry(clipped))
+#  centroids <- st_centroid(st_geometry(clipped))
   
-  centroid_coords <- st_coordinates(centroids)
+#  centroid_coords <- st_coordinates(centroids)
   
-  clipped$voronoi_centroid_x <- centroid_coords[, 1]
-  clipped$voronoi_centroid_y <- centroid_coords[, 2]
+#  clipped$voronoi_centroid_x <- centroid_coords[, 1]
+#  clipped$voronoi_centroid_y <- centroid_coords[, 2]
   
   # Calculate distance between player and polygon centroid
-  player_coords <- frame_df |>
-    select(nflId, player_x = x, player_y = y)
+#  player_coords <- frame_df |>
+#    select(nflId, player_x = x, player_y = y)
   
-  clipped <- clipped |>
-    left_join(player_coords, by = "nflId") |>
-    mutate(
-      distance_to_centroid = sqrt(
-        (player_x - voronoi_centroid_x)^2 +
-          (player_y - voronoi_centroid_y)^2
-      )
-    )
+#  clipped <- clipped |>
+#    left_join(player_coords, by = "nflId") |>
+#    mutate(
+#      distance_to_centroid = sqrt(
+#        (player_x - voronoi_centroid_x)^2 +
+#          (player_y - voronoi_centroid_y)^2
+#      )
+#    )
   
   # Count polygon vertices
-  clipped$voronoi_vertices <- sapply(
-    st_geometry(clipped),
-    function(p) {
-      nrow(st_coordinates(p)) - 1
-    }
-  )
+#  clipped$voronoi_vertices <- sapply(
+#    st_geometry(clipped),
+#    function(p) {
+#      nrow(st_coordinates(p)) - 1
+#    }
+#  )
   
   # Calculate neighboring polygons
-  neighbors <- st_relate(
-    clipped,
-    pattern = "F***1****"
-  )
+#  neighbors <- st_relate(
+#    clipped,
+#    pattern = "F***1****"
+#  )
   
-  clipped$voronoi_neighbors <- lengths(neighbors)
+#  clipped$voronoi_neighbors <- lengths(neighbors)
   
   # Calculate percentage of bounding box occupied
-  bbox_area <- (xmax - xmin) * (ymax - ymin)
+#  bbox_area <- (xmax - xmin) * (ymax - ymin)
   
-  clipped$voronoi_area_pct <-
-    100 * clipped$voronoi_area / bbox_area
+#  clipped$voronoi_area_pct <-
+#    100 * clipped$voronoi_area / bbox_area
   
   return(clipped) 
 }
