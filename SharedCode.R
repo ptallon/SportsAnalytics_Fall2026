@@ -490,7 +490,7 @@ visualize_single_play <- function(game_df,
                                    "football" = "#663300"),guide = "none") +
     
     scale_size_manual(values = c("home" = 6, 
-                                 "football" = 4,
+                                 "football" = 40, #was 4
                                  "away" = 6), guide = "none") +
     scale_shape_manual(values = c("home" = 21, 
                                   "football" = 16, 
@@ -532,9 +532,7 @@ visualize_single_play <- function(game_df,
       geom_point(
         data = game_df |>
           filter(
-            inMotionAtBallSnap == TRUE,
-            team != "football"
-          ),
+            inMotionAtBallSnap == TRUE),
         aes(x = x, y = y),
         colour = "white",
         fill = "black",
