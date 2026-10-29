@@ -274,14 +274,14 @@ make_voronoi <- function(frame_df) {
   
   # Calculate distance between player and polygon centroid
   player_coords <- frame_df |>
-    select(nflId, x, y)
+    select(nflId, player_x = x, player_y = y)
   
   clipped <- clipped |>
     left_join(player_coords, by = "nflId") |>
     mutate(
       distance_to_centroid = sqrt(
-        (x - voronoi_centroid_x)^2 +
-          (y - voronoi_centroid_y)^2
+        (player_x - voronoi_centroid_x)^2 +
+          (player_y - voronoi_centroid_y)^2
       )
     )
   
