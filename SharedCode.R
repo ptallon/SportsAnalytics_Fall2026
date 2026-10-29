@@ -342,10 +342,10 @@ add_boundingbox_to_df <- function(game_df,
     stop("The dataframe you're working with must contain only one playId.\nPlease filter the dataframe before calling this function.")
   }
   
-  (\(x) {
-    print("Finished checking distinct")
-    x
-  })() |>
+  #(\(x) {
+  #  print("Finished checking distinct")
+  #  x
+  #})() |>
   
   group_by(gameId, playId, team, frameId) |>
   # set the line of scrimmage
@@ -359,29 +359,14 @@ add_boundingbox_to_df <- function(game_df,
     ymax = max(y, na.rm = 0)) |>
   ungroup() |>
   
-    (\(x) {
-      print("Finished basic bb")
-      x
-    })() |>    
-    
   # find the frame where the ball is snapped
   group_by(gameId, playId) |>
   mutate(snap_frame = min(frameId[event=="ball_snap"], na.rm=TRUE)) |>
   ungroup() |>
   
-    (\(x) {
-      print("Finished frame for ball snap")
-      x
-    })() |>
-    
   # determine which side of the line of scrimmage a team is on
   group_by(gameId, playId, team) |>
 
-    (\(x) {
-      print("Finished side")
-      x
-    })() |>
-    
   arrange(frameId, .by_group = TRUE) |>
   mutate(
       side = if_else((first(xmin) + first(xmax))/2 < first(yardLine),
