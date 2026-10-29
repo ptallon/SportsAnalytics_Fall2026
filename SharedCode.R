@@ -436,8 +436,19 @@ visualize_single_play <- function(game_df,
     missing_columns <- setdiff(required_columns, names(game_df))
     
     if (length(missing_columns) > 0) {
-      stop("Missing columns required for Voronoi tessellation: ",
-           paste(missing_columns, collapse = ", "))
+      print(paste0(
+        "Your dataframe does not contain a bounding box that is\n",
+        "needed for Voronoi Tesselation. I will add a simple box for you."
+      ))
+           
+      game_df <- add_boundingbox_to_df(
+        game_df,
+        BufferFromLineOfScrimmage = 0,
+        BufferFromTopOfBoundingBox = 0,
+        BufferFromBottomOfBoundingBox = 0,
+        BufferFromSidesFurthestFromLineOfScrimmage = 0,
+        GeneralBuffer = 0)
+      
     }
     
     load_packages(c("dplyr", "purrr", "sf"))
