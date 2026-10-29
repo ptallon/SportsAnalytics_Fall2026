@@ -437,8 +437,10 @@ visualize_single_play <- function(game_df,
     
     if (length(missing_columns) > 0) {
       print(paste0(
-        "Your dataframe does not contain a bounding box that is\n",
-        "needed for Voronoi Tesselation. I will add a simple box for you."
+        "Your dataframe does not contain a bounding box that is ",
+        "needed for Voronoi Tesselation. I will add a simple box so that ",
+        "you will be able to view the visualization. If you want to add ",
+        "a bounding box, use the function to do this before visualization."
       ))
            
       game_df <- add_boundingbox_to_df(
@@ -448,7 +450,6 @@ visualize_single_play <- function(game_df,
         BufferFromBottomOfBoundingBox = 0,
         BufferFromSidesFurthestFromLineOfScrimmage = 0,
         GeneralBuffer = 0)
-      
     }
     
     load_packages(c("dplyr", "purrr", "sf"))
@@ -615,14 +616,7 @@ visualize_single_play <- function(game_df,
   ) 
 
   if (saveAnimation) {
-    large_anim <- animate(g, 
-            fps=fps, 
-            nframes = frames_to_display, 
-            width = 480, 
-            height = 280, 
-            renderer = gifski_renderer() 
-    )
-    anim_save("Assignment2_Animation.gif", animation = large_anim)
+    anim_save("Assignment2_Animation.gif", animation = small_anim)
     print(paste0("Animation saved as ", getwd(), "/Assignment2_Animation.gif"))
   } 
   
