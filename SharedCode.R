@@ -342,75 +342,71 @@ add_boundingbox_to_df <- function(game_df,
     stop("The dataframe you're working with must contain only one playId.\nPlease filter the dataframe before calling this function.")
   }
   
-  #(\(x) {
-  #  print("Finished checking distinct")
-  #  x
-  #})() |>
-  
-  group_by(gameId, playId, team, frameId) |>
-  # set the line of scrimmage
-  mutate(
-    yardLine = first(absoluteYardlineNumber) + 20,
+  game_df |>
+    group_by(gameId, playId, team, frameId) |>
+    # set the line of scrimmage
+    mutate(
+      yardLine = first(absoluteYardlineNumber) + 20,
       
-    # add in the original boundaries of the box before adding any buffers
-    xmin = min(x, na.rm = 0), 
-    xmax = max(x, na.rm = 0),
-    ymin = min(y, na.rm = 0),
-    ymax = max(y, na.rm = 0)) |>
-  ungroup() |>
+      # add in the original boundaries of the box before adding any buffers
+      xmin = min(x, na.rm = 0), 
+      xmax = max(x, na.rm = 0),
+      ymin = min(y, na.rm = 0),
+      ymax = max(y, na.rm = 0)) |>
+    ungroup() |>
   
-  # find the frame where the ball is snapped
-  group_by(gameId, playId) |>
-  mutate(snap_frame = min(frameId[event=="ball_snap"], na.rm=TRUE)) |>
-  ungroup() |>
+    # find the frame where the ball is snapped
+    group_by(gameId, playId) |>
+    mutate(snap_frame = min(frameId[event=="ball_snap"], na.rm=TRUE)) |>
+    ungroup() |>
   
-  # determine which side of the line of scrimmage a team is on
-  group_by(gameId, playId, team) |>
+    # determine which side of the line of scrimmage a team is on
+    group_by(gameId, playId, team) |>
 
-  arrange(frameId, .by_group = TRUE) |>
-  mutate(
-      side = if_else((first(xmin) + first(xmax))/2 < first(yardLine),
+    arrange(frameId, .by_group = TRUE) |>
+    mutate(
+        side = if_else((first(xmin) + first(xmax))/2 < first(yardLine),
                      "left",
                      "right")) |>
-  ungroup() |>
+    ungroup() |>
     
-  mutate(
-  # set the left boundary for xmin
-    xmin = case_when(
-        #before and at the ball snap
-        frameId <= snap_frame & side == "left" ~
-          xmin - BufferFromSidesFurthestFromLineOfScrimmage,
-        frameId <= snap_frame & side == "right" ~
-          pmax(xmin - BufferFromSidesFurthestFromLineOfScrimmage, yardLine + BufferFromLineOfScrimmage),
+    mutate(
+    # set the left boundary for xmin
+      xmin = case_when(
+          #before and at the ball snap
+          frameId <= snap_frame & side == "left" ~
+            xmin - BufferFromSidesFurthestFromLineOfScrimmage,
+          frameId <= snap_frame & side == "right" ~
+            pmax(xmin - BufferFromSidesFurthestFromLineOfScrimmage, yardLine + BufferFromLineOfScrimmage),
         
-        # after the ball snap, unrestricted expansion
-        frameId > snap_frame ~
-          xmin - GeneralBuffer,
-        TRUE ~ xmin
+          # after the ball snap, unrestricted expansion
+          frameId > snap_frame ~
+            xmin - GeneralBuffer,
+          TRUE ~ xmin
+        ),
+      
+      # set the boundary on the right
+      xmax = case_when(
+          #before and at the ball snap
+          frameId <= snap_frame & side == "left" ~
+            pmin(xmax + BufferFromSidesFurthestFromLineOfScrimmage, 
+               yardLine - BufferFromLineOfScrimmage),
+          frameId <= snap_frame & side == "right" ~
+            xmax + BufferFromSidesFurthestFromLineOfScrimmage,
+        
+          #after the ball is snapped, no restrictions
+          frameId > snap_frame ~
+            xmax + GeneralBuffer,
+          TRUE ~ xmax
       ),
       
-    # set the boundary on the right
-    xmax = case_when(
-        #before and at the ball snap
-        frameId <= snap_frame & side == "left" ~
-          pmin(xmax + BufferFromSidesFurthestFromLineOfScrimmage, 
-               yardLine - BufferFromLineOfScrimmage),
-        frameId <= snap_frame & side == "right" ~
-          xmax + BufferFromSidesFurthestFromLineOfScrimmage,
-        
-        #after the ball is snapped, no restrictions
-        frameId > snap_frame ~
-          xmax + GeneralBuffer,
-        TRUE ~ xmax
-    ),
-      
-    # expand the Y boundaries by a buffer without going over the sideline
-    ymin = ifelse(ymin - BufferFromBottomOfBoundingBox < 0, ymin, 
+      # expand the Y boundaries by a buffer without going over the sideline
+      ymin = ifelse(ymin - BufferFromBottomOfBoundingBox < 0, ymin, 
                     ymin - BufferFromBottomOfBoundingBox),
-    ymax = ifelse(ymax + BufferFromTopOfBoundingBox > 160/3, ymax, 
+      ymax = ifelse(ymax + BufferFromTopOfBoundingBox > 160/3, ymax, 
                     ymax + BufferFromTopOfBoundingBox)) |>
-    ungroup() |>
-    data.frame()
+      ungroup() |>
+      data.frame()
 }
 
 # ---------------------------------------------------------------------------------
