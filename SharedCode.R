@@ -253,6 +253,60 @@ make_voronoi <- function(frame_df) {
     st_area(clipped)
   )
   
+  # Calculate polygon perimeter
+  clipped$voronoi_perimeter <- as.numeric(
+    st_length(st_boundary(clipped))
+  )
+  
+  # Calculate polygon compactness
+  # 1 = perfect circle; smaller values = less compact
+  clipped$voronoi_compactness <-
+    4 * pi * clipped$voronoi_area /
+    clipped$voronoi_perimeter^2
+  
+  # Calculate polygon centroids
+  centroids <- st_centroid(clipped)
+  
+  centroid_coords <- st_coordinates(centroids)
+  
+  clipped$voronoi_centroid_x <- centroid_coords[, 1]
+  clipped$voronoi_centroid_y <- centroid_coords[, 2]
+  
+  # Calculate distance between player and polygon centroid
+  player_coords <- frame_df |>
+    select(nflId, x, y)
+  
+  clipped <- clipped |>
+    left_join(player_coords, by = "nflId") |>
+    mutate(
+      distance_to_centroid = sqrt(
+        (x - voronoi_centroid_x)^2 +
+          (y - voronoi_centroid_y)^2
+      )
+    )
+  
+  # Count polygon vertices
+  clipped$voronoi_vertices <- sapply(
+    st_geometry(clipped),
+    function(p) {
+      nrow(st_coordinates(p)) - 1
+    }
+  )
+  
+  # Calculate neighboring polygons
+  neighbors <- st_relate(
+    clipped,
+    pattern = "F***1****"
+  )
+  
+  clipped$voronoi_neighbors <- lengths(neighbors)
+  
+  # Calculate percentage of bounding box occupied
+  bbox_area <- (xmax - xmin) * (ymax - ymin)
+  
+  clipped$voronoi_area_pct <-
+    100 * clipped$voronoi_area / bbox_area
+  
   return(clipped) 
 }
 
