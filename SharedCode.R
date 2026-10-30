@@ -410,10 +410,6 @@ add_boundingbox_to_df <- function(game_df,
     stop("The dataframe you're working with must contain only one playId.\nPlease filter the dataframe before calling this function.")
   }
   
-  if (!any(game_df$event == "ball_snap", na.rm = TRUE)) {
-    stop("The dataframe must contain a ball_snap event.")
-  }
-  
   game_df |>
     group_by(gameId, playId, team, frameId) |>
     # set the line of scrimmage
