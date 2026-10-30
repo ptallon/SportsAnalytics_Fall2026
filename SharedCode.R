@@ -287,24 +287,24 @@ make_voronoi <- function(frame_df) {
   player_coords <- frame_df |>
     select(nflId, player_x = x, player_y = y)
 
-  print("2")  
-    
-#  clipped <- clipped |>
-#    left_join(player_coords, by = "nflId") |>
-#    mutate(
-#      distance_to_centroid = sqrt(
-#        (player_x - voronoi_centroid_x)^2 +
-#          (player_y - voronoi_centroid_y)^2
-#      )
-#    )
+  clipped <- clipped |>
+    left_join(player_coords, by = "nflId") |>
+    mutate(
+      distance_to_centroid = sqrt(
+        (player_x - voronoi_centroid_x)^2 +
+          (player_y - voronoi_centroid_y)^2
+      )
+    )
+
+  print("3")  
   
   # Count polygon vertices
-#  clipped$voronoi_vertices <- sapply(
-#    st_geometry(clipped),
-#    function(p) {
-#      nrow(st_coordinates(p)) - 1
-#    }
-#  )
+  clipped$voronoi_vertices <- sapply(
+    st_geometry(clipped),
+    function(p) {
+      nrow(st_coordinates(p)) - 1
+    }
+  )
   
   # Calculate neighboring polygons
 #  neighbors <- st_relate(
