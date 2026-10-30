@@ -279,9 +279,10 @@ make_voronoi <- function(frame_df) {
     clipped$voronoi_perimeter^2
   
   # Calculate polygon centroids
-#  centroids <- st_centroid(st_geometry(clipped))
+  centroids <- st_centroid(st_geometry(clipped))
   
-#  centroid_coords <- st_coordinates(centroids)
+  centroid_coords <- st_coordinates(centroids)
+  print("1")
   
 #  clipped$voronoi_centroid_x <- centroid_coords[, 1]
 #  clipped$voronoi_centroid_y <- centroid_coords[, 2]
