@@ -171,7 +171,7 @@ make_voronoi <- function(frame_df) {
   margin <- max(
     xmax - xmin,
     ymax - ymin,
-    1
+    1, na.rm=T
   ) * 2
   
   envelope <- st_as_sfc(
