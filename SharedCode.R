@@ -109,12 +109,10 @@ make_voronoi <- function(frame_df) {
       BufferFromBottomOfBoundingBox = 0,
       BufferFromSidesFurthestFromLineOfScrimmage = 0,
       GeneralBuffer = 0)
+    print(paste0("Since your dataframe does not include a bounding ",
+                 "box, I will add one to your dataframe since one is needed ",
+                 "to create Voronoi polygons."))
   }
-  #if (!all()) {
-  #  print(paste0("Since your dataframe does not include a bounding ",
-  #               "box, I will add one to your dataframe since one is needed ",
-  #               "to create Voronoi polygons."))
-  
   
   # Get bounding box coordinates
   xmin <- first(frame_df$xmin)
@@ -276,9 +274,9 @@ make_voronoi <- function(frame_df) {
   
   # Calculate polygon compactness
   # 1 = perfect circle; smaller values = less compact
-#  clipped$voronoi_compactness <-
-#    4 * pi * clipped$voronoi_area /
-#    clipped$voronoi_perimeter^2
+  clipped$voronoi_compactness <-
+    4 * pi * clipped$voronoi_area /
+    clipped$voronoi_perimeter^2
   
   # Calculate polygon centroids
 #  centroids <- st_centroid(st_geometry(clipped))
