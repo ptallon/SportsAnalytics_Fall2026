@@ -101,11 +101,7 @@ make_voronoi <- function(frame_df) {
   if (nrow(frame_df) < 2) return(NULL)
   
   # check to see if it already includes a bounding box
-  if (!all(c("xmin", "xmax", "ymin", "ymax") %in% names(frame_df))) {
-    print(paste0("Since your dataframe does not include a bounding ",
-                 "box, I will add one to your dataframe since one is needed ",
-                 "to create Voronoi polygons."))
-
+  if(!all(c("xmin", "xmax", "ymin", "ymax") %in% names(frame_df))) {
     frame_df <- add_boundingbox_to_df(
       frame_df,
       BufferFromLineOfScrimmage = 0,
@@ -114,6 +110,11 @@ make_voronoi <- function(frame_df) {
       BufferFromSidesFurthestFromLineOfScrimmage = 0,
       GeneralBuffer = 0)
   }
+  #if (!all()) {
+  #  print(paste0("Since your dataframe does not include a bounding ",
+  #               "box, I will add one to your dataframe since one is needed ",
+  #               "to create Voronoi polygons."))
+  
   
   # Get bounding box coordinates
   xmin <- first(frame_df$xmin)
