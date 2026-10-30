@@ -402,8 +402,6 @@ add_boundingbox_to_df <- function(game_df,
     stop("Buffer values must be between 0 and 10.")
   }
   
-  load_packages("dplyr")
-  
   if (n_distinct(game_df$gameId) != 1) {
     stop("The dataframe you're working with must contain only one gameId.\nPlease filter the dataframe before calling this function.")
   }
@@ -419,10 +417,10 @@ add_boundingbox_to_df <- function(game_df,
       yardLine = first(absoluteYardlineNumber) + 20,
       
       # add in the original boundaries of the box before adding any buffers
-      xmin = min(x, na.rm = 0), 
-      xmax = max(x, na.rm = 0),
-      ymin = min(y, na.rm = 0),
-      ymax = max(y, na.rm = 0)) |>
+      xmin = min(x, na.rm = TRUE), 
+      xmax = max(x, na.rm = TRUE),
+      ymin = min(y, na.rm = TRUE),
+      ymax = max(y, na.rm = TRUE)) |>
     ungroup() |>
   
     # find the frame where the ball is snapped
