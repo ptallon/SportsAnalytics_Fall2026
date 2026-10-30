@@ -318,8 +318,6 @@ make_voronoi <- function(frame_df) {
   clipped$voronoi_area_pct <-
     100 * clipped$voronoi_area / bbox_area
 
-  print("4") 
-    
   return(clipped) 
 }
 
