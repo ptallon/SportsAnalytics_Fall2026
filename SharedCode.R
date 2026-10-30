@@ -296,8 +296,6 @@ make_voronoi <- function(frame_df) {
       )
     )
 
-  print("3")  
-  
   # Count polygon vertices
   clipped$voronoi_vertices <- sapply(
     st_geometry(clipped),
@@ -307,19 +305,21 @@ make_voronoi <- function(frame_df) {
   )
   
   # Calculate neighboring polygons
-#  neighbors <- st_relate(
-#    clipped,
-#    pattern = "F***1****"
-#  )
+  neighbors <- st_relate(
+    clipped,
+    pattern = "F***1****"
+  )
   
-#  clipped$voronoi_neighbors <- lengths(neighbors)
+  clipped$voronoi_neighbors <- lengths(neighbors)
   
   # Calculate percentage of bounding box occupied
-#  bbox_area <- (xmax - xmin) * (ymax - ymin)
+  bbox_area <- (xmax - xmin) * (ymax - ymin)
   
-#  clipped$voronoi_area_pct <-
-#    100 * clipped$voronoi_area / bbox_area
-  
+  clipped$voronoi_area_pct <-
+    100 * clipped$voronoi_area / bbox_area
+
+  print("4") 
+    
   return(clipped) 
 }
 
