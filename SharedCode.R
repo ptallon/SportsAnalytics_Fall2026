@@ -408,7 +408,7 @@ add_boundingbox_to_df <- function(game_df,
   
   if (n_distinct(game_df$playId) != 1) {
     stop("The dataframe you're working with must contain only one playId.\nPlease filter the dataframe before calling this function.")
-  }
+  } 
   
   game_df |>
     group_by(gameId, playId, team, frameId) |>
