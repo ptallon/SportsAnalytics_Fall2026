@@ -109,9 +109,6 @@ make_voronoi <- function(frame_df) {
       BufferFromBottomOfBoundingBox = 0,
       BufferFromSidesFurthestFromLineOfScrimmage = 0,
       GeneralBuffer = 0)
-    print(paste0("Since your dataframe does not include a bounding ",
-                 "box, I will add one to your dataframe since one is needed ",
-                 "to create Voronoi polygons."))
   }
   
   # Get bounding box coordinates
@@ -282,15 +279,16 @@ make_voronoi <- function(frame_df) {
   centroids <- st_centroid(st_geometry(clipped))
   
   centroid_coords <- st_coordinates(centroids)
-  print("1")
-  
-#  clipped$voronoi_centroid_x <- centroid_coords[, 1]
-#  clipped$voronoi_centroid_y <- centroid_coords[, 2]
+
+  clipped$voronoi_centroid_x <- centroid_coords[, 1]
+  clipped$voronoi_centroid_y <- centroid_coords[, 2]
   
   # Calculate distance between player and polygon centroid
-#  player_coords <- frame_df |>
-#    select(nflId, player_x = x, player_y = y)
-  
+  player_coords <- frame_df |>
+    select(nflId, player_x = x, player_y = y)
+
+  print("2")  
+    
 #  clipped <- clipped |>
 #    left_join(player_coords, by = "nflId") |>
 #    mutate(
