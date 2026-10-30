@@ -429,7 +429,13 @@ add_boundingbox_to_df <- function(game_df,
   
     # find the frame where the ball is snapped
     group_by(gameId, playId) |>
-    mutate(snap_frame = min(frameId[event=="ball_snap"], na.rm=TRUE)) |>
+    mutate(
+      snap_frame = if (any(event == "ball_snap", na.rm = TRUE)) {
+        min(frameId[event == "ball_snap"], na.rm = TRUE)
+      } else {
+        min(frameId, na.rm = TRUE)
+      }
+    ) |>
     ungroup() |>
   
     # determine which side of the line of scrimmage a team is on
