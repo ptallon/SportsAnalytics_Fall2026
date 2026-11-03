@@ -115,7 +115,7 @@ visualize_route <- function(play_df,
   if (length(yardlines) != 1) {
     stop("The dataframe must contain one valid yardline_number.")
   }
-  
+  print(yardlines)
   yardLine <- 110 - yardlines
   
   # Establish field boundaries
