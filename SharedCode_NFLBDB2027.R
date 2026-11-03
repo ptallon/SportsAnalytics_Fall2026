@@ -212,7 +212,7 @@ load_tracking_data <- function(directory,
               by = c("game_id", "play_id", "nfl_id")) |>
     mutate( x = ifelse(play_direction == "right", 120-x, x),
             y = ifelse(play_direction == "right", 160/3-y, y),
-            yardline_number = ifelse(playDirection == "right", 100 - yardline_number, yardline_number)
+            yardline_number = ifelse(play_direction == "right", 100 - yardline_number, yardline_number)
     )
   
   return(df)
