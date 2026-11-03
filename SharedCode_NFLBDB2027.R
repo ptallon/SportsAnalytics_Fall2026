@@ -82,8 +82,7 @@ visualize_route <- function(play_df,
   )
   
   # Identify the line of scrimmage
-  yardLine <- 100 - unique(route_df$yardline_number) 
-  print(yardLine)
+  yardLine <- 110 - unique(route_df$yardline_number) 
 
   # Establish field boundaries
   yard_min <- max(-5, min(route_df$x, na.rm = TRUE) - 5)
@@ -132,7 +131,16 @@ visualize_route <- function(play_df,
         linewidth = 1,
         na.rm = TRUE
       ) +
-      geom_point(size = 5) +
+      geom_point(
+        aes(
+          fill = nfl_position,
+          color = ifelse(target == TRUE, "black", NA)
+        ),
+        shape = 21,
+        size = 5,
+        stroke = 1.5
+      ) +
+      scale_color_identity() +
       transition_reveal(frameId)
     
     frames_to_display <- n_distinct(route_df$frameId)
@@ -200,7 +208,7 @@ load_tracking_data <- function(directory,
   pp <- fread(paste0(directory,"/player_play.csv"))
   
   df <- df |>
-    left_join(pp |> select(game_id, play_id, nfl_id, 
+    left_join(pp |> select(game_id, play_id, nfl_id, target,
                            yardline_number, play_direction),
               by = c("game_id", "play_id", "nfl_id")) |>
     mutate( x = ifelse(play_direction == "right", 120-x, x),
