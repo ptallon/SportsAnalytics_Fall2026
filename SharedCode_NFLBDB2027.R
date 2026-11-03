@@ -130,7 +130,7 @@ load_tracking_data <- function(directory,
     stop('You did not specify a directory for your data files. Where are your files located?')
   }
 
-  if (!years %in% c(2023, 2024, 2025))  {
+  if (!all(years %in% c(2023, 2024, 2025))) {
     stop("Valid years for tracking data are 2023 through 2025")
   }
   
