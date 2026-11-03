@@ -48,11 +48,11 @@ visualize_route <- function(play_df,
   
   # Check that there is only one game and one play
   if (n_distinct(play_df$game_id) != 1) {
-    stop("Please pass a dataframe containing only one gameId.")
+    stop("Please pass a dataframe containing only one game_id.")
   }
   
   if (n_distinct(play_df$play_id) != 1) {
-    stop("Please pass a dataframe containing only one playId.")
+    stop("Please pass a dataframe containing only one play_id.")
   }
   
   # Check that player IDs have been supplied
@@ -91,8 +91,7 @@ visualize_route <- function(play_df,
         "transparent"
       )
     ) |>
-    ungroup() |>
-    data.frame()
+    ungroup()
   
   if (nrow(route_df) == 0) {
     stop("No tracking data found for the selected players.")
@@ -157,14 +156,22 @@ visualize_route <- function(play_df,
       linewidth = 1
     ) +
     
-    # Set the football field background
+    # Set the football field and legend backgrounds
     theme(
       panel.background = element_rect(
         fill = "forestgreen",
         color = "forestgreen"
       ),
       panel.grid = element_blank(),
-      legend.position = "right"
+      legend.position = "right",
+      legend.key = element_rect(
+        fill = "white",
+        color = NA
+      ),
+      legend.background = element_rect(
+        fill = "white",
+        color = NA
+      )
     )
   
   if (animate) {
@@ -198,17 +205,17 @@ visualize_route <- function(play_df,
           yend = y,
           color = nfl_position
         ),
-        linewidth = 1
+        linewidth = 1,
+        key_glyph = "point"
       ) +
       
-      # Show colored circles in the NFL position legend
+      # Display colored circles in the legend
       scale_color_discrete(
         name = "NFL Position",
         guide = guide_legend(
           override.aes = list(
             shape = 16,
-            size = 5,
-            linewidth = 0
+            size = 5
           )
         )
       ) +
@@ -260,17 +267,17 @@ visualize_route <- function(play_df,
           yend = y,
           color = nfl_position
         ),
-        linewidth = 1
+        linewidth = 1,
+        key_glyph = "point"
       ) +
       
-      # Show colored circles in the NFL position legend
+      # Display colored circles in the legend
       scale_color_discrete(
         name = "NFL Position",
         guide = guide_legend(
           override.aes = list(
             shape = 16,
-            size = 5,
-            linewidth = 0
+            size = 5
           )
         )
       ) +
@@ -294,7 +301,7 @@ visualize_route <- function(play_df,
       
       scale_color_identity(guide = "none") +
       scale_fill_discrete(guide = "none")
-    print("1")
+    
     return(g)
   }
 }
