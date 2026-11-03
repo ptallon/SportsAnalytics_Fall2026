@@ -69,7 +69,7 @@ visualize_route <- function(play_df,
   
   g <- ggplot(data = route_df, aes(x = x, y = y, color="black", fill = "black")) +
 
-    gg_field(yardmin = max(-5,min(game_df$x)-5), yardmax = min(max(game_df$x)+5, 125) ) +
+    gg_field(yardmin = max(-5,min(route_df$x)-5), yardmax = min(max(route_df$x)+5, 125) ) +
     
     # Connect each coordinate to its previous coordinate
     geom_segment(
