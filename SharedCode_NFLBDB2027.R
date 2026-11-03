@@ -117,3 +117,26 @@ visualize_route <- function(play_df,
     guides(alpha = "none") 
 
 }
+
+# ---------------------------------------------------------------------------------
+# -------------------------- Load Tracking Data -----------------------------------
+# ---------------------------------------------------------------------------------
+# read in up to three years of tracking data and bind into one df
+load_tracking_data <- function(directory,
+                               years = c(2023, 2024, 2025)) {
+  load_packages(c("data.table", "purrr"))
+  
+  if (missing(directory)) {
+    stop('You did not specify a directory for your data files. Where are your files located?')
+  }
+
+  if (!year %in% c(2023, 2024, 2025))  {
+    stop("Valid years for tracking data are 2023 through 2025")
+  }
+  
+  df <- year |>
+    purrr::map_dfr(\(y) fread(paste0(directory,"/game_tracking_", y, ".csv")))
+  
+  return(df)
+}
+  
