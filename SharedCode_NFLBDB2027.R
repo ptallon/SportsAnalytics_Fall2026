@@ -62,14 +62,14 @@ visualize_route <- function(play_df,
   
   # Identify the frame where the ball was snapped
   snap_frames <- play_df |>
-    filter(event == "ball_snap") |>
+    filter(event == "ball_snap", !is.na(frameId)) |>
     pull(frameId)
   
-  if (length(snap_frames) == 0 || all(is.na(snap_frames))) {
+  if (length(snap_frames) == 0) {
     stop("No ball_snap event was found in the dataframe.")
   }
   
-  snap_frame <- min(snap_frames, na.rm = TRUE)
+  snap_frame <- min(snap_frames)
   
   # Keep selected players from ball_snap to the last frame
   route_df <- play_df |>
@@ -123,11 +123,18 @@ visualize_route <- function(play_df,
   yard_min <- max(-5, min(route_df$x) - 5)
   yard_max <- min(125, max(route_df$x) + 5)
   
+  # Prepare route segments
+  segment_df <- route_df |>
+    filter(!is.na(prior_x), !is.na(prior_y))
+  
+  # Identify the final recorded position of each player
+  final_df <- route_df |>
+    group_by(nfl_id) |>
+    slice_max(order_by = frameId, n = 1, with_ties = FALSE) |>
+    ungroup()
+  
   # Create the base plot
-  g <- ggplot(
-    data = route_df,
-    aes(x = x, y = y)
-  ) +
+  g <- ggplot() +
     
     # Draw the football field
     gg_field(
@@ -156,15 +163,12 @@ visualize_route <- function(play_df,
       legend.position = "right"
     )
   
-  # Prepare line segments
-  segment_df <- route_df |>
-    filter(!is.na(prior_x), !is.na(prior_y))
-  
   if (animate) {
     
-    # Create cumulative route segments for each frame
+    # Identify the available frames
     frames <- sort(unique(route_df$frameId))
     
+    # Create cumulative route segments for each frame
     animation_df <- lapply(frames, function(f) {
       
       segment_df |>
@@ -174,7 +178,7 @@ visualize_route <- function(play_df,
     }) |>
       bind_rows()
     
-    # Create current player positions for each frame
+    # Identify each player's current position at each frame
     current_df <- route_df |>
       mutate(animation_frame = frameId)
     
@@ -230,7 +234,7 @@ visualize_route <- function(play_df,
     
   } else {
     
-    # Draw the complete routes
+    # Draw all route segments through the final position
     g <- g +
       
       geom_segment(
@@ -250,9 +254,9 @@ visualize_route <- function(play_df,
       # Start a new color scale for marker borders
       ggnewscale::new_scale_color() +
       
-      # Draw markers at all recorded coordinates
+      # Draw only the final circle for each player
       geom_point(
-        data = route_df,
+        data = final_df,
         aes(
           x = x,
           y = y,
@@ -260,7 +264,7 @@ visualize_route <- function(play_df,
           color = border_color
         ),
         shape = 21,
-        size = 5,
+        size = 6,
         stroke = 1.5
       ) +
       
