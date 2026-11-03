@@ -175,7 +175,6 @@ visualize_route <- function(play_df,
   }
 }
 
-
 # ---------------------------------------------------------------------------------
 # -------------------------- Load Tracking Data -----------------------------------
 # ---------------------------------------------------------------------------------
@@ -201,6 +200,16 @@ load_tracking_data <- function(directory,
     mutate(frameId = dense_rank(time)) |>
     ungroup() |>
     data.frame()
+  
+  pp <- fread(paste0(directory,"/player_play.csv"))
+  
+  df <- df |>
+    left_join(pp |> select(game_id, play_id, nfl_id, play_direction),
+              by = c("game_id", "play_id", "nfl_id")) |>
+    mutate( x = ifelse(play_direction == "right", 120-x, x),
+            y = ifelse(play_direction == "right", 160/3-y, y),
+            yardline_number = ifelse(playDirection == "right", 100 - yardline_number, yardline_number)
+    )
   
   return(df)
 }
