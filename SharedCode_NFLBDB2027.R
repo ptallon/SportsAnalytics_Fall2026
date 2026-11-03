@@ -82,7 +82,8 @@ visualize_route <- function(play_df,
   )
   
   # Identify the line of scrimmage
-  yardLine <- 120 - unique(route_df$yardline_number) 
+  yardLine <- 100 - unique(route_df$yardline_number) 
+  print(yardLine)
 
   # Establish field boundaries
   yard_min <- max(-5, min(route_df$x, na.rm = TRUE) - 5)
@@ -99,20 +100,14 @@ visualize_route <- function(play_df,
     )
   ) +
     
-    gg_field(
-      yardmin = yard_min,
-      yardmax = yard_max
-    ) +
+    gg_field(yardmin = yard_min, yardmax = yard_max) +
     
     # Show the line of scrimmage
     annotate(
       "segment",
-      x = yardLine,
-      xend = yardLine,
-      y = 0,
-      yend = 53.33,
-      colour = "yellow",
-      linewidth = 1
+      x = yardLine, xend = yardLine,
+      y = 0, yend = 53.33,
+      colour = "yellow", linewidth = 1
     ) +
     
     # Create a color legend based on NFL position
