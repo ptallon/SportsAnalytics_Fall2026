@@ -67,10 +67,17 @@ visualize_route <- function(play_df,
   
   source('https://raw.githubusercontent.com/mlfurman3/gg_field/main/gg_field.R')
   
-  g <- ggplot(data = route_df, aes(x = x, y = y, color="black", fill = "black")) +
+  yardLine <- unique(play_df$yardline_number) + 20
+  
+  g <- ggplot(data = route_df, aes(x = x, y = y, color=nfl_position, group = nfl_position)) +
+    
+    scale_color_discrete(name = "NFL Position") +
 
     gg_field(yardmin = max(-5,min(route_df$x)-5), yardmax = min(max(route_df$x)+5, 125) ) +
     
+    # show the absolute line
+    annotate("segment", x = yardLine, xend = yardLine, y = 0, yend = 53.33, colour = "yellow", linewidth = 1) 
+  
     # Connect each coordinate to its previous coordinate
     geom_segment(
       aes(
