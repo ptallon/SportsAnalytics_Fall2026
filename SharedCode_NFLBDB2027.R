@@ -83,7 +83,7 @@ visualize_route <- function(play_df,
   
   # Identify the line of scrimmage
   yardLine <- unique(route_df$yardline_number) 
-
+  print(yardLine)
   # Establish field boundaries
   yard_min <- max(-5, min(route_df$x, na.rm = TRUE) - 5)
   yard_max <- min(125, max(route_df$x, na.rm = TRUE) + 5)
