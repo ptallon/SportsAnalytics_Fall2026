@@ -23,7 +23,7 @@ load_packages <- function(packages = c()) {
 # visualize the route taken by one or more players during a play
 
 visualize_route <- function(play_df,
-                            animate = TRUE,
+                            animate = FALSE,
                             nflIds = c()) {
   
   if (n_distinct(play_df$game_id) != 1) {
@@ -89,8 +89,24 @@ visualize_route <- function(play_df,
     theme(panel.background = element_rect(fill = "forestgreen", 
                                           color = "forestgreen"), panel.grid = element_blank()) +
     guides(alpha = "none") 
+  
+  if (animate) {
+    g <- g + transition_manual(frameId)
+    
+    frames_to_display <- length(unique(route_df$frameId))
+    fps <- 10
+    animate(g, 
+            fps=fps, 
+            nframes = frames_to_display, 
+            width = 480, 
+            height = 280, 
+            renderer = gifski_renderer() 
+    ) 
+    
+  } else {
+    g
+  }
 
-  g
 }
 
 # ---------------------------------------------------------------------------------
