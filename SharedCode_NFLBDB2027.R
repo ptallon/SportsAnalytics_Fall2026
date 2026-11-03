@@ -26,11 +26,11 @@ visualize_route <- function(play_df,
                             animate = TRUE,
                             nflIds = c()) {
   
-  if (n_distinct(play_df$gameId) != 1) {
+  if (n_distinct(play_df$game_id) != 1) {
     stop('There is more than one gameId in your data. Please pass in a dataframe with one gameId and one playId.')
   }
   
-  if (n_distinct(play_df$playId) != 1) {
+  if (n_distinct(play_df$play_id) != 1) {
     stop('There is more than one playId in your data. Please pass in a dataframe with one gameId and one playId.')
   }
   
@@ -53,9 +53,9 @@ visualize_route <- function(play_df,
   
   # Keep selected players from ball_snap to the last frame
   route_df <- play_df |>
-    filter(nflId %in% nflIds, frameId >= snap_frame) |>
-    arrange(nflId, frameId) |>
-    group_by(nflId) |>
+    filter(nfl_id %in% nflIds, frameId >= snap_frame) |>
+    arrange(nfl_id, frameId) |>
+    group_by(nfl_id) |>
     mutate(prior_x = ifelse(frameId >= snap_frame, lag(x), NA),
            prior_y = ifelse(frameId >= snap_frame, lag(y), NA)) |>
     ungroup() |>
@@ -67,22 +67,9 @@ visualize_route <- function(play_df,
   
   source('https://raw.githubusercontent.com/mlfurman3/gg_field/main/gg_field.R')
   
-  yardLine <- unique(play_df$absoluteYardlineNumber) + 20
-  
-  g <- ggplot(data = route_df, aes(x = x, y = y, color=team, fill=team)) +
-    scale_fill_manual(values = c("home" = "dodgerblue1",
-                                 "away" = "firebrick1"), guide = "none") +
-    scale_colour_manual(values = c("home" = "black",
-                                   "away" = "black"),guide = "none") +
-    scale_size_manual(values = c("home" = 6,
-                                 "away" = 6), guide = "none") +
-    scale_shape_manual(values = c("home" = 21, 
-                                  "away" = 21), guide = "none") +
-    
+  g <- ggplot(data = route_df, aes(x = x, y = y, color="black", fill = "black")) +
+
     gg_field(yardmin = max(-5,min(game_df$x)-5), yardmax = min(max(game_df$x)+5, 125) ) +
-    
-    # show the absolute line
-    annotate("segment", x = yardLine, xend = yardLine, y = 0, yend = 53.33, colour = "yellow", linewidth = 1) +
     
     # Connect each coordinate to its previous coordinate
     geom_segment(
@@ -97,19 +84,6 @@ visualize_route <- function(play_df,
     
     # Show a marker at each coordinate
     geom_point(size = 2.5) +
-    
-    coord_fixed() +
-    
-    # Black jersey numbers for players not highlighted
-    geom_text(
-      data = route_df,
-      aes(x = x, y = y, label = jerseyNumber),
-      colour = "black",
-      size = 3.2,
-      vjust = 0.36
-    ) +
-    
-    labs(title = first(route_df$playDescription)) +
     
     # set the theme to dark green to color the areas beyond the end zones
     theme(panel.background = element_rect(fill = "forestgreen", 
