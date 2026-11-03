@@ -135,7 +135,11 @@ visualize_route <- function(play_df,
     
     # Show the route developing frame by frame
     g <- g +
-      geom_path(linewidth = 1) +
+      geom_path(
+        aes(group = nfl_id),
+        linewidth = 1,
+        na.rm = TRUE
+      ) +
       geom_point(size = 5) +
       transition_reveal(frameId)
     
@@ -147,8 +151,8 @@ visualize_route <- function(play_df,
       g,
       fps = fps,
       nframes = max(2, frames_to_display),
-      width = 600,
-      height = 350,
+      width = 480,
+      height = 280,
       renderer = gifski_renderer()
     )
     
