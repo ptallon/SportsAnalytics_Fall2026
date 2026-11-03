@@ -294,7 +294,7 @@ visualize_route <- function(play_df,
       
       scale_color_identity(guide = "none") +
       scale_fill_discrete(guide = "none")
-    
+    print("1")
     return(g)
   }
 }
