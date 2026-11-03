@@ -130,11 +130,11 @@ load_tracking_data <- function(directory,
     stop('You did not specify a directory for your data files. Where are your files located?')
   }
 
-  if (!year %in% c(2023, 2024, 2025))  {
+  if (!years %in% c(2023, 2024, 2025))  {
     stop("Valid years for tracking data are 2023 through 2025")
   }
   
-  df <- year |>
+  df <- years |>
     purrr::map_dfr(\(y) fread(paste0(directory,"/game_tracking_", y, ".csv")))
   
   return(df)
