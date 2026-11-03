@@ -26,11 +26,11 @@ visualize_route <- function(play_df,
                             animate = TRUE,
                             nflIds = c()) {
   
-  if (n_distinct(game_df$gameId) != 1) {
+  if (n_distinct(play_df$gameId) != 1) {
     stop('There is more than one gameId in your data. Please pass in a dataframe with one gameId and one playId.')
   }
   
-  if (n_distinct(game_df$playId) != 1) {
+  if (n_distinct(play_df$playId) != 1) {
     stop('There is more than one playId in your data. Please pass in a dataframe with one gameId and one playId.')
   }
   
