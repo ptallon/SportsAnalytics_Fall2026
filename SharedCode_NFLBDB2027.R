@@ -41,6 +41,22 @@ visualize_route <- function(play_df,
     stop("Please specify at least one nfl_id.")
   }
   
+  # Check required columns
+  required_columns <- c(
+    "game_id", "play_id", "nfl_id", "frameId",
+    "event", "x", "y", "nfl_position",
+    "target", "yardline_number"
+  )
+  
+  missing_columns <- setdiff(required_columns, names(play_df))
+  
+  if (length(missing_columns) > 0) {
+    stop(
+      "Missing required columns: ",
+      paste(missing_columns, collapse = ", ")
+    )
+  }
+  
   # Identify the frame where the ball was snapped
   snap_frames <- play_df |>
     filter(event == "ball_snap") |>
@@ -56,7 +72,10 @@ visualize_route <- function(play_df,
   route_df <- play_df |>
     filter(
       nfl_id %in% nflIds,
-      frameId >= snap_frame
+      frameId >= snap_frame,
+      !is.na(x),
+      !is.na(y),
+      !is.na(frameId)
     ) |>
     arrange(nfl_id, frameId) |>
     group_by(nfl_id) |>
@@ -71,22 +90,25 @@ visualize_route <- function(play_df,
     stop("No tracking data found for the selected players.")
   }
   
-  # Check that position information exists
-  if (!"nfl_position" %in% names(route_df)) {
-    stop("The dataframe must contain an nfl_position column.")
-  }
-  
   # Load the football field function
   source(
     "https://raw.githubusercontent.com/mlfurman3/gg_field/main/gg_field.R"
   )
   
   # Identify the line of scrimmage
-  yardLine <- 110 - unique(route_df$yardline_number) 
-
+  yardlines <- unique(
+    play_df$yardline_number[!is.na(play_df$yardline_number)]
+  )
+  
+  if (length(yardlines) != 1) {
+    stop("The dataframe must contain one valid yardline_number.")
+  }
+  
+  yardLine <- 110 - yardlines
+  
   # Establish field boundaries
-  yard_min <- max(-5, min(route_df$x, na.rm = TRUE) - 5)
-  yard_max <- min(125, max(route_df$x, na.rm = TRUE) + 5)
+  yard_min <- max(-5, min(route_df$x) - 5)
+  yard_max <- min(125, max(route_df$x) + 5)
   
   # Create the base plot
   g <- ggplot(
@@ -99,18 +121,28 @@ visualize_route <- function(play_df,
     )
   ) +
     
-    gg_field(yardmin = yard_min, yardmax = yard_max) +
+    # Draw the football field
+    gg_field(
+      yardmin = yard_min,
+      yardmax = yard_max
+    ) +
     
     # Show the line of scrimmage
     annotate(
       "segment",
-      x = yardLine, xend = yardLine,
-      y = 0, yend = 53.33,
-      colour = "yellow", linewidth = 1
+      x = yardLine,
+      xend = yardLine,
+      y = 0,
+      yend = 53.33,
+      colour = "yellow",
+      linewidth = 1
     ) +
     
     # Create a color legend based on NFL position
     scale_color_discrete(name = "NFL Position") +
+    
+    # Use the same colors for the point fills
+    scale_fill_discrete(guide = "none") +
     
     # Set the football field background
     theme(
@@ -122,34 +154,48 @@ visualize_route <- function(play_df,
       legend.position = "right"
     )
   
+  # Define point layers for both static and animated plots
+  point_layers <- list(
+    
+    # All points filled according to NFL position
+    geom_point(
+      aes(fill = nfl_position),
+      shape = 21,
+      color = NA,
+      size = 5
+    ),
+    
+    # Black border for target == TRUE
+    geom_point(
+      data = \(d) d |> filter(target %in% TRUE),
+      aes(fill = nfl_position),
+      shape = 21,
+      color = "black",
+      size = 5,
+      stroke = 1.5
+    )
+  )
+  
   if (animate) {
     
     # Show the route developing frame by frame
     g <- g +
+      
       geom_path(
         aes(group = nfl_id),
         linewidth = 1,
         na.rm = TRUE
       ) +
-      geom_point(
-        aes(
-          fill = nfl_position,
-          color = ifelse(target == TRUE, "black", NA)
-        ),
-        shape = 21,
-        size = 5,
-        stroke = 1.5
-      ) +
-      scale_color_identity() +
+      
+      point_layers +
+      
       transition_reveal(frameId)
     
     frames_to_display <- n_distinct(route_df$frameId)
     
-    fps <- 10
-    
     animation <- gganimate::animate(
       g,
-      fps = fps,
+      fps = 10,
       nframes = max(2, frames_to_display),
       width = 480,
       height = 280,
@@ -162,6 +208,7 @@ visualize_route <- function(play_df,
     
     # Connect each coordinate to its previous coordinate
     g <- g +
+      
       geom_segment(
         aes(
           x = prior_x,
@@ -169,11 +216,11 @@ visualize_route <- function(play_df,
           xend = x,
           yend = y
         ),
-        linewidth = 1
+        linewidth = 1,
+        na.rm = TRUE
       ) +
       
-      # Show a marker at each coordinate
-      geom_point(size = 5)
+      point_layers
     
     return(g)
   }
