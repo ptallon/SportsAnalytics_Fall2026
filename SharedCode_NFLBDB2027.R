@@ -107,7 +107,7 @@ visualize_route <- function(play_df,
   source(
     "https://raw.githubusercontent.com/mlfurman3/gg_field/main/gg_field.R"
   )
-  
+  print("1")
   # Identify the line of scrimmage
   yardlines <- unique(
     play_df$yardline_number[!is.na(play_df$yardline_number)]
