@@ -107,17 +107,6 @@ visualize_route <- function(play_df,
     "https://raw.githubusercontent.com/mlfurman3/gg_field/main/gg_field.R"
   )
   
-  # Identify the line of scrimmage
-  yardlines <- unique(
-    play_df$yardline_number[!is.na(play_df$yardline_number)]
-  )
-  
-  if (length(yardlines) != 1) {
-    stop("The dataframe must contain one valid yardline_number.")
-  }
-  print(yardlines)
-  yardLine <- 110 - yardlines
-  
   # Establish field boundaries
   yard_min <- max(-5, min(route_df$x) - 5)
   yard_max <- min(125, max(route_df$x) + 5)
@@ -143,17 +132,6 @@ visualize_route <- function(play_df,
     gg_field(
       yardmin = yard_min,
       yardmax = yard_max
-    ) +
-    
-    # Show the line of scrimmage
-    annotate(
-      "segment",
-      x = yardLine,
-      xend = yardLine,
-      y = 0,
-      yend = 53.33,
-      colour = "yellow",
-      linewidth = 1
     ) +
     
     # Set the football field and legend backgrounds
@@ -340,8 +318,7 @@ load_tracking_data <- function(directory,
                            yardline_number, play_direction),
               by = c("game_id", "play_id", "nfl_id")) |>
     mutate( x = ifelse(play_direction == "right", 120-x, x),
-            y = ifelse(play_direction == "right", 160/3-y, y),
-            yardline_number = ifelse(play_direction == "right", 100 - yardline_number, yardline_number)
+            y = ifelse(play_direction == "right", 160/3-y, y)
     )
   
   return(df)
