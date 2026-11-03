@@ -71,8 +71,6 @@ visualize_route <- function(play_df,
   
   g <- ggplot(data = route_df, aes(x = x, y = y, color=nfl_position, group = nfl_id)) +
     
-    scale_color_discrete(name = "NFL Position") +
-
     gg_field(yardmin = max(-5,min(route_df$x)-5), yardmax = min(max(route_df$x)+5, 125) ) +
     
     # show the absolute line
@@ -94,6 +92,8 @@ visualize_route <- function(play_df,
   
   g <- g +
 
+    scale_color_discrete(name = "NFL Position") +
+    
     # Show a marker at each coordinate
     geom_point(size = 5) +
     
