@@ -25,21 +25,10 @@ visualize_route <- function(play_df,
                             animate = FALSE,
                             nflIds = c()) {
   
-  load_packages(c("dplyr", "ggplot2", "gganimate", "gifski"))
-  
-  # Check that there is only one game and one play
-  if (n_distinct(play_df$game_id) != 1) {
-    stop("Please pass a dataframe containing only one gameId.")
-  }
-  
-  if (n_distinct(play_df$play_id) != 1) {
-    stop("Please pass a dataframe containing only one playId.")
-  }
-  
-  # Check that player IDs have been supplied
-  if (length(nflIds) == 0) {
-    stop("Please specify at least one nfl_id.")
-  }
+  load_packages(c(
+    "dplyr", "ggplot2", "gganimate",
+    "gifski", "ggnewscale", "ggnewscale"
+  ))
   
   # Check required columns
   required_columns <- c(
@@ -55,6 +44,20 @@ visualize_route <- function(play_df,
       "Missing required columns: ",
       paste(missing_columns, collapse = ", ")
     )
+  }
+  
+  # Check that there is only one game and one play
+  if (n_distinct(play_df$game_id) != 1) {
+    stop("Please pass a dataframe containing only one gameId.")
+  }
+  
+  if (n_distinct(play_df$play_id) != 1) {
+    stop("Please pass a dataframe containing only one playId.")
+  }
+  
+  # Check that player IDs have been supplied
+  if (length(nflIds) == 0) {
+    stop("Please specify at least one nfl_id.")
   }
   
   # Identify the frame where the ball was snapped
@@ -81,13 +84,23 @@ visualize_route <- function(play_df,
     group_by(nfl_id) |>
     mutate(
       prior_x = lag(x),
-      prior_y = lag(y)
+      prior_y = lag(y),
+      border_color = if_else(
+        target %in% TRUE,
+        "black",
+        NA_character_
+      )
     ) |>
     ungroup() |>
     data.frame()
   
   if (nrow(route_df) == 0) {
     stop("No tracking data found for the selected players.")
+  }
+  
+  # Check that there are at least two frames for animation
+  if (animate && n_distinct(route_df$frameId) < 2) {
+    stop("At least two frames are required for animation.")
   }
   
   # Load the football field function
@@ -116,7 +129,6 @@ visualize_route <- function(play_df,
     aes(
       x = x,
       y = y,
-      color = nfl_position,
       group = nfl_id
     )
   ) +
@@ -138,12 +150,6 @@ visualize_route <- function(play_df,
       linewidth = 1
     ) +
     
-    # Create a color legend based on NFL position
-    scale_color_discrete(name = "NFL Position") +
-    
-    # Use the same colors for the point fills
-    scale_fill_discrete(guide = "none") +
-    
     # Set the football field background
     theme(
       panel.background = element_rect(
@@ -154,41 +160,60 @@ visualize_route <- function(play_df,
       legend.position = "right"
     )
   
-  # Define point layers for both static and animated plots
-  point_layers <- list(
+  # Add route lines colored by NFL position
+  if (animate) {
     
-    # All points filled according to NFL position
-    geom_point(
-      aes(fill = nfl_position),
-      shape = 21,
-      color = NA,
-      size = 5
-    ),
+    g <- g +
+      geom_path(
+        aes(color = nfl_position),
+        linewidth = 1,
+        na.rm = TRUE
+      )
     
-    # Black border for target == TRUE
+  } else {
+    
+    g <- g +
+      geom_segment(
+        aes(
+          x = prior_x,
+          y = prior_y,
+          xend = x,
+          yend = y,
+          color = nfl_position
+        ),
+        linewidth = 1,
+        na.rm = TRUE
+      )
+  }
+  
+  # Add position color scale
+  g <- g +
+    scale_color_discrete(name = "NFL Position") +
+    
+    # Start a new color scale for point borders
+    ggnewscale::new_scale_color() +
+    
+    # Add points with position fill and target borders
     geom_point(
-      data = \(d) d |> filter(target %in% TRUE),
-      aes(fill = nfl_position),
+      aes(
+        fill = nfl_position,
+        color = border_color
+      ),
       shape = 21,
-      color = "black",
       size = 5,
       stroke = 1.5
-    )
-  )
+    ) +
+    
+    # Use literal border colors
+    scale_color_identity(guide = "none") +
+    
+    # Hide duplicate fill legend
+    scale_fill_discrete(guide = "none")
   
   if (animate) {
     
-    # Show the route developing frame by frame
+    # Reveal the route progressively
     g <- g +
-      
-      geom_path(
-        aes(group = nfl_id),
-        linewidth = 1,
-        na.rm = TRUE
-      ) +
-      
-      point_layers +
-      
       transition_reveal(frameId)
     
     frames_to_display <- n_distinct(route_df$frameId)
@@ -196,7 +221,7 @@ visualize_route <- function(play_df,
     animation <- gganimate::animate(
       g,
       fps = 10,
-      nframes = max(2, frames_to_display),
+      nframes = frames_to_display,
       width = 480,
       height = 280,
       renderer = gifski_renderer()
@@ -205,22 +230,6 @@ visualize_route <- function(play_df,
     return(animation)
     
   } else {
-    
-    # Connect each coordinate to its previous coordinate
-    g <- g +
-      
-      geom_segment(
-        aes(
-          x = prior_x,
-          y = prior_y,
-          xend = x,
-          yend = y
-        ),
-        linewidth = 1,
-        na.rm = TRUE
-      ) +
-      
-      point_layers
     
     return(g)
   }
