@@ -78,19 +78,24 @@ visualize_route <- function(play_df,
     # show the absolute line
     annotate("segment", x = yardLine, xend = yardLine, y = 0, yend = 53.33, colour = "yellow", linewidth = 1) 
   
+  if (!animate) {
     # Connect each coordinate to its previous coordinate
-    geom_segment(
-      aes(
-        x = prior_x,
-        y = prior_y,
-        xend = x,
-        yend = y
-      ),
-      linewidth = 1
-    ) +
-    
+    g <- g +
+      geom_segment(
+        aes(
+          x = prior_x,
+          y = prior_y,
+          xend = x,
+          yend = y
+        ),
+        linewidth = 1
+      ) 
+  }
+  
+  g <- g +
+
     # Show a marker at each coordinate
-    geom_point(size = 2.5) +
+    geom_point(size = 5) +
     
     # set the theme to dark green to color the areas beyond the end zones
     theme(panel.background = element_rect(fill = "forestgreen", 
