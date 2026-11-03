@@ -90,6 +90,7 @@ visualize_route <- function(play_df,
                                           color = "forestgreen"), panel.grid = element_blank()) +
     guides(alpha = "none") 
 
+  g
 }
 
 # ---------------------------------------------------------------------------------
