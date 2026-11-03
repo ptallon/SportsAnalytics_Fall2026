@@ -208,7 +208,8 @@ load_tracking_data <- function(directory,
   pp <- fread(paste0(directory,"/player_play.csv"))
   
   df <- df |>
-    left_join(pp |> select(game_id, play_id, nfl_id, play_direction),
+    left_join(pp |> select(game_id, play_id, nfl_id, 
+                           yardline_number, play_direction),
               by = c("game_id", "play_id", "nfl_id")) |>
     mutate( x = ifelse(play_direction == "right", 120-x, x),
             y = ifelse(play_direction == "right", 160/3-y, y),
