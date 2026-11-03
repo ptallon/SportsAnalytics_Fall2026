@@ -69,7 +69,7 @@ visualize_route <- function(play_df,
   
   yardLine <- unique(play_df$yardline_number) + 20
   
-  g <- ggplot(data = route_df, aes(x = x, y = y, color=nfl_position, group = nfl_position)) +
+  g <- ggplot(data = route_df, aes(x = x, y = y, color=nfl_position, group = nfl_id)) +
     
     scale_color_discrete(name = "NFL Position") +
 
