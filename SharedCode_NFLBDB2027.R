@@ -137,6 +137,13 @@ load_tracking_data <- function(directory,
   df <- years |>
     purrr::map_dfr(\(y) fread(paste0(directory,"/game_tracking_", y, ".csv")))
   
+  df <- df |>
+    arrange(game_id, play_id, time) |>
+    group_by(game_id, play_id) |>
+    mutate(frameId = dense_rank(time)) |>
+    ungroup() |>
+    data.frame()
+  
   return(df)
 }
   
