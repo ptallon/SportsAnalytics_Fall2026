@@ -130,7 +130,11 @@ visualize_route <- function(play_df,
   # Identify the final recorded position of each player
   final_df <- route_df |>
     group_by(nfl_id) |>
-    slice_max(order_by = frameId, n = 1, with_ties = FALSE) |>
+    slice_max(
+      order_by = frameId,
+      n = 1,
+      with_ties = FALSE
+    ) |>
     ungroup()
   
   # Create the base plot
@@ -197,7 +201,17 @@ visualize_route <- function(play_df,
         linewidth = 1
       ) +
       
-      scale_color_discrete(name = "NFL Position") +
+      # Show colored circles in the NFL position legend
+      scale_color_discrete(
+        name = "NFL Position",
+        guide = guide_legend(
+          override.aes = list(
+            shape = 16,
+            size = 5,
+            linewidth = 0
+          )
+        )
+      ) +
       
       # Start a new color scale for marker borders
       ggnewscale::new_scale_color() +
@@ -249,7 +263,17 @@ visualize_route <- function(play_df,
         linewidth = 1
       ) +
       
-      scale_color_discrete(name = "NFL Position") +
+      # Show colored circles in the NFL position legend
+      scale_color_discrete(
+        name = "NFL Position",
+        guide = guide_legend(
+          override.aes = list(
+            shape = 16,
+            size = 5,
+            linewidth = 0
+          )
+        )
+      ) +
       
       # Start a new color scale for marker borders
       ggnewscale::new_scale_color() +
