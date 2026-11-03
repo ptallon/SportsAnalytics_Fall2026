@@ -56,10 +56,7 @@ visualize_route <- function(play_df,
   route_df <- play_df |>
     filter(
       nfl_id %in% nflIds,
-      frameId >= snap_frame,
-      !is.na(x),
-      !is.na(y),
-      !is.na(frameId)
+      frameId >= snap_frame
     ) |>
     arrange(nfl_id, frameId) |>
     group_by(nfl_id) |>
@@ -85,8 +82,8 @@ visualize_route <- function(play_df,
   )
   
   # Identify the line of scrimmage
-  yardLine <- unique(play_df$yardline_number) 
-  print(yardLine)
+  yardLine <- unique(route_df$yardline_number) 
+
   # Establish field boundaries
   yard_min <- max(-5, min(route_df$x, na.rm = TRUE) - 5)
   yard_max <- min(125, max(route_df$x, na.rm = TRUE) + 5)
