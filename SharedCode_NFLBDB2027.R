@@ -27,7 +27,7 @@ visualize_route <- function(play_df,
   
   load_packages(c(
     "dplyr", "ggplot2", "gganimate",
-    "gifski", "ggnewscale", "ggnewscale"
+    "gifski", "ggnewscale"
   ))
   
   # Check required columns
@@ -88,7 +88,7 @@ visualize_route <- function(play_df,
       border_color = if_else(
         target %in% TRUE,
         "black",
-        NA_character_
+        "transparent"
       )
     ) |>
     ungroup() |>
@@ -107,7 +107,7 @@ visualize_route <- function(play_df,
   source(
     "https://raw.githubusercontent.com/mlfurman3/gg_field/main/gg_field.R"
   )
-  print("1")
+  
   # Identify the line of scrimmage
   yardlines <- unique(
     play_df$yardline_number[!is.na(play_df$yardline_number)]
@@ -126,11 +126,7 @@ visualize_route <- function(play_df,
   # Create the base plot
   g <- ggplot(
     data = route_df,
-    aes(
-      x = x,
-      y = y,
-      group = nfl_id
-    )
+    aes(x = x, y = y)
   ) +
     
     # Draw the football field
@@ -160,20 +156,33 @@ visualize_route <- function(play_df,
       legend.position = "right"
     )
   
-  # Add route lines colored by NFL position
+  # Prepare line segments
+  segment_df <- route_df |>
+    filter(!is.na(prior_x), !is.na(prior_y))
+  
   if (animate) {
     
-    g <- g +
-      geom_path(
-        aes(color = nfl_position),
-        linewidth = 1,
-        na.rm = TRUE
-      )
+    # Create cumulative route segments for each frame
+    frames <- sort(unique(route_df$frameId))
     
-  } else {
+    animation_df <- lapply(frames, function(f) {
+      
+      segment_df |>
+        filter(frameId <= f) |>
+        mutate(animation_frame = f)
+      
+    }) |>
+      bind_rows()
     
+    # Create current player positions for each frame
+    current_df <- route_df |>
+      mutate(animation_frame = frameId)
+    
+    # Draw cumulative routes
     g <- g +
+      
       geom_segment(
+        data = animation_df,
         aes(
           x = prior_x,
           y = prior_y,
@@ -181,47 +190,37 @@ visualize_route <- function(play_df,
           yend = y,
           color = nfl_position
         ),
-        linewidth = 1,
-        na.rm = TRUE
-      )
-  }
-  
-  # Add position color scale
-  g <- g +
-    scale_color_discrete(name = "NFL Position") +
-    
-    # Start a new color scale for point borders
-    ggnewscale::new_scale_color() +
-    
-    # Add points with position fill and target borders
-    geom_point(
-      aes(
-        fill = nfl_position,
-        color = border_color
-      ),
-      shape = 21,
-      size = 5,
-      stroke = 1.5
-    ) +
-    
-    # Use literal border colors
-    scale_color_identity(guide = "none") +
-    
-    # Hide duplicate fill legend
-    scale_fill_discrete(guide = "none")
-  
-  if (animate) {
-    
-    # Reveal the route progressively
-    g <- g +
-      transition_reveal(frameId)
-    
-    frames_to_display <- n_distinct(route_df$frameId)
+        linewidth = 1
+      ) +
+      
+      scale_color_discrete(name = "NFL Position") +
+      
+      # Start a new color scale for marker borders
+      ggnewscale::new_scale_color() +
+      
+      # Draw the large moving circle
+      geom_point(
+        data = current_df,
+        aes(
+          x = x,
+          y = y,
+          fill = nfl_position,
+          color = border_color
+        ),
+        shape = 21,
+        size = 6,
+        stroke = 1.5
+      ) +
+      
+      scale_color_identity(guide = "none") +
+      scale_fill_discrete(guide = "none") +
+      
+      transition_manual(animation_frame)
     
     animation <- gganimate::animate(
       g,
       fps = 10,
-      nframes = frames_to_display,
+      nframes = length(frames),
       width = 480,
       height = 280,
       renderer = gifski_renderer()
@@ -231,9 +230,47 @@ visualize_route <- function(play_df,
     
   } else {
     
+    # Draw the complete routes
+    g <- g +
+      
+      geom_segment(
+        data = segment_df,
+        aes(
+          x = prior_x,
+          y = prior_y,
+          xend = x,
+          yend = y,
+          color = nfl_position
+        ),
+        linewidth = 1
+      ) +
+      
+      scale_color_discrete(name = "NFL Position") +
+      
+      # Start a new color scale for marker borders
+      ggnewscale::new_scale_color() +
+      
+      # Draw markers at all recorded coordinates
+      geom_point(
+        data = route_df,
+        aes(
+          x = x,
+          y = y,
+          fill = nfl_position,
+          color = border_color
+        ),
+        shape = 21,
+        size = 5,
+        stroke = 1.5
+      ) +
+      
+      scale_color_identity(guide = "none") +
+      scale_fill_discrete(guide = "none")
+    
     return(g)
   }
 }
+
 
 # ---------------------------------------------------------------------------------
 # -------------------------- Load Tracking Data -----------------------------------
