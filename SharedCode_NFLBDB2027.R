@@ -324,3 +324,21 @@ load_tracking_data <- function(directory,
   return(df)
 }
   
+# ---------------------------------------------------------------------------------
+# -------------------------- Route Metrics -----------------------------------
+# ---------------------------------------------------------------------------------
+# calculate summary route stats for each route for each play
+
+route_statistics <- function(play_df = play_df) {
+  play_df <- play_df |>
+    arrange(game_id, play_id, nfl_id, frameId) |>
+    group_by(game_id, play_id, nfl_id) |>
+    summarise(total_dis  = sum(dis),
+              euclid_dis = sqrt((first(x) - last(x))^2 +
+                                (first(y) - last(y))^2),
+              play_time  = max(frameId, na.rm=TRUE),
+              aver_speed = total_dis / play_time,
+              .groups = 'keep') |>
+    data.frame()
+  return(play_df)
+}
